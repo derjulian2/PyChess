@@ -1,0 +1,37 @@
+
+from graphics.game_objects.game_object import *
+
+import pygame
+
+class Draggable(GameObject):
+    """
+    base-class for any draggable game-object.
+    
+    because python doesn't have the inheritance diamond-problem, we can
+    easily inherit from multiple 'GameObject'-base-classes and still
+    refer to the same set of fields.
+    """
+    
+    def __init__(self, 
+                 asset_manager: AssetManager,
+                 bounding_box: Rect) -> None:
+        super().__init__(asset_manager, bounding_box)
+        self.is_dragging: bool = False
+
+
+    def process_events(self, event: Event) -> None:
+        if (event.type == pygame.MOUSEBUTTONDOWN):
+            if (Rect(pygame.mouse.get_pos(), (1, 1)) in self.bounding_box):
+                self.is_dragging = True
+                pygame.mouse.get_rel() # call once to reset since-last-call
+        elif (event.type == pygame.MOUSEBUTTONUP and self.is_dragging):
+            self.is_dragging = False
+
+
+    def update(self, time_delta: float) -> None:
+        if (self.is_dragging):
+            self.bounding_box = self.bounding_box.move(pygame.mouse.get_rel())
+
+
+    def rebuild(self) -> None:
+        self.is_dragging = False

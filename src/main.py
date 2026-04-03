@@ -10,3 +10,6 @@ if __name__ == "__main__":
     app.change_scene(ChessBoardScene)
     app.exec()
     pygame.quit()
+
+        
+

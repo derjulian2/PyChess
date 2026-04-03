@@ -3,6 +3,7 @@ from graphics.game_objects.game_object import *
 
 from pygame_gui.core import UIElement
 from pygame_gui import UIManager
+from asset_manager import AssetManager
 
 
 class Scene:
@@ -11,10 +12,12 @@ class Scene:
     and UI-Elements.
     """
 
-    def __init__(self, ui_manager: UIManager) -> None:
+    def __init__(self, ui_manager: UIManager, asset_manager: AssetManager) -> None:
         self.game_objects: list[GameObject] = [ ]
         self.ui_elements: list[UIElement]   = [ ]
-        self.ui_manager = ui_manager
+        
+        self.ui_manager    = ui_manager
+        self.asset_manager = asset_manager
 
 
     def attach_game_object(self, game_object: GameObject) -> None:
@@ -22,6 +25,7 @@ class Scene:
         attaches a new object to this scene's list of game-objects.
         for the layered drawing, this list will be kept sorted after GameObject.layer.
         """
+        i = 0
         for i in range(len(self.game_objects)):
             if self.game_objects[i].layer == game_object.layer:
                 break
@@ -59,3 +63,15 @@ class Scene:
         for obj in self.game_objects:
             obj.draw(target)
         self.ui_manager.draw_ui(target)
+
+
+    def rebuild(self) -> None:
+        """
+        forwards .rebuild()-call to all of it's game-objects and ui-elements.
+        this is possibly a costly action and should only be performed
+        in special cases (e.g. window-resize that requires asset-rescale).
+        """
+        for obj in self.game_objects:
+            obj.rebuild()
+        for elem in self.ui_elements:
+            elem.rebuild()
