@@ -20,6 +20,10 @@ class Draggable(GameObject):
 
 
     def process_events(self, event: Event) -> None:
+        """
+        draggable-logic: record when mouse is pressed and released
+        and update the is_dragging state accordingly.
+        """
         if (event.type == pygame.MOUSEBUTTONDOWN):
             if (Rect(pygame.mouse.get_pos(), (1, 1)) in self.bounding_box):
                 self.is_dragging = True
@@ -29,6 +33,9 @@ class Draggable(GameObject):
 
 
     def update(self, time_delta: float) -> None:
+        """
+        reposition the game-object's bounding-box if it is dragged.
+        """
         if (self.is_dragging):
             self.bounding_box = self.bounding_box.move(pygame.mouse.get_rel())
 

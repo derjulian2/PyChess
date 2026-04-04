@@ -14,7 +14,7 @@ class ChessBoard:
     board_columns = 8
 
     def __init__(self) -> None:
-        self.rows: list[list[ChessPiece | None]] = list()
+        self.pieces: list[ChessPiece] = list()
         self.__set_starting_position__()
     
 
@@ -22,11 +22,8 @@ class ChessBoard:
         """
         clears the entire board to just empty squares.
         """
-        self.rows.clear()
-        for _ in range(ChessBoard.board_rows):
-            row = [ None for __ in range(ChessBoard.board_columns) ]
-            self.rows.append(row)
-
+        self.pieces.clear()
+        
 
     def __set_starting_position__(self) -> None:
         """
@@ -80,3 +77,14 @@ class ChessBoard:
             if (row is not self.rows[-1]):
                 res += "/"
         return res
+
+    """
+    information-queries.
+    """
+
+    def get_pieces(self) -> list[ChessPiece]:
+        """
+        returns a list containing all pieces that
+        are left on the board.
+        """
+        return self.pieces

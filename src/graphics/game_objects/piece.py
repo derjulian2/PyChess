@@ -6,7 +6,7 @@ from asset_manager import AssetManager
 
 class ChessPiece(Draggable, GameObject):
     """
-    base-class for a moveable chess-piece.
+    object for a moveable chess-piece.
     """
 
     def __init__(self,
@@ -16,13 +16,17 @@ class ChessPiece(Draggable, GameObject):
                  size: float) -> None:
         Draggable.__init__(self, asset_manager, Rect(pos, (size, size))),
         GameObject.__init__(self, asset_manager, self.bounding_box)
-        self.logical_piece: logic.ChessPiece = piece
+        self.logical_piece: logic.ChessPiece = piece # the corresponding piece in the game-logic
         self.image: Surface                  = None
         self.__fit_image__()
 
 
     def __fit_image__(self) -> None:
-        img = self.asset_manager.images[(self.logical_piece.piece_color, self.logical_piece.piece_type)]
+        """
+        looks up the piece's image from the asset-manager
+        and scales it to the bounding-box.
+        """
+        img = self.asset_manager.images[(self.logical_piece.color, self.logical_piece.type)]
         self.image = pygame.transform.smoothscale(img, self.bounding_box.size)
 
 

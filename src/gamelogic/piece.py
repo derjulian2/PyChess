@@ -1,36 +1,22 @@
 
-from enum import Enum
-
-
-class ChessPieceType(Enum):
-    pawn   = 0
-    knight = 1
-    bishop = 2
-    rook   = 3
-    queen  = 4
-    king   = 6
-
-
-class ChessPieceColor(Enum):
-    white = 0
-    black = 1
-
-
-class ChessPlayerColor(Enum):
-    white = 0
-    black = 1
-
+from gamelogic.common import *
+from gamelogic.square import *
+from gamelogic.move import *
 
 class ChessPiece:
     """
     object that models a single chess-piece
-    identified by a piece-type and color.
+    identified by a piece-type, color and square on the board.
     """
 
-    def __init__(self, type: ChessPieceType, color: ChessPieceColor) -> None:
-        self.piece_type: ChessPieceType   = type
-        self.piece_color: ChessPieceColor = color
-
+    def __init__(self, 
+                 type: ChessPieceType, 
+                 color: ChessPieceColor,
+                 square: ChessSquare) -> None:
+        self.type: ChessPieceType   = type
+        self.color: ChessPieceColor = color
+        self.square: ChessSquare    = square
+        
 
     def to_fen(self) -> str:
         """
@@ -38,7 +24,7 @@ class ChessPiece:
         black pieces are lowercase-letters, white pieces uppercase letters.
         """
         res: str
-        match (self.piece_type):
+        match (self.type):
             case (ChessPieceType.pawn):
                 res = "p"
             case (ChessPieceType.knight):
@@ -51,6 +37,6 @@ class ChessPiece:
                 res = "q"
             case (ChessPieceType.king):
                 res = "k"
-        if (self.piece_color == ChessPieceColor.white):
+        if (self.color == ChessPieceColor.white):
             res = res.upper()
         return res
