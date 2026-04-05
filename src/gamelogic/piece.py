@@ -18,6 +18,27 @@ class ChessPiece:
         self.square: ChessSquare    = square
         
 
+    def get_type(self) -> ChessPieceType:
+        """
+        getter for the type of piece.
+        """
+        return self.type
+
+
+    def get_color(self) -> ChessPieceColor:
+        """
+        getter for piece-color.
+        """
+        return self.color
+
+
+    def get_square(self) -> ChessSquare:
+        """
+        getter for piece's square on the board.
+        """
+        return self.square
+    
+
     def to_fen(self) -> str:
         """
         converts a single piece to FEN-string notation.

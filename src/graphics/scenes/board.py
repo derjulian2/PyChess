@@ -18,7 +18,7 @@ class ChessBoardScene(Scene):
         
         self.game: logic.ChessGame = logic.ChessGame()
 
-        self.board = ChessBoard(asset_manager, self.game.board, (100, 100), 800)
+        self.board = ChessBoard(asset_manager, self.game.board, (50, 50), 800)
         self.attach_game_object(self.board)
 
 

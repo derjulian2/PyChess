@@ -3,7 +3,6 @@ from enum import Enum
 
 from gamelogic.piece import *
 
-
 class ChessBoard:
     """
     object that models the state of a
@@ -30,26 +29,26 @@ class ChessBoard:
         clears the board and sets a standard chess starting-position.
         """
         # helper-functions to generate by color
-        def get_pawn_row(color: ChessPieceColor) -> list[ChessPiece]:
-            return [ ChessPiece(ChessPieceType.pawn, color) for _ in range(self.board_columns) ]
+        def get_pawn_row(color: ChessPieceColor, row: int) -> list[ChessPiece]:
+            return [ ChessPiece(ChessPieceType.pawn, color, ChessSquare(i + 1, row)) for i in range(self.board_columns) ]
 
-        def get_back_row(color: ChessPieceColor) -> list[ChessPiece]:
+        def get_back_row(color: ChessPieceColor, row: int) -> list[ChessPiece]:
             return [
-                ChessPiece(ChessPieceType.rook, color),
-                ChessPiece(ChessPieceType.knight, color),
-                ChessPiece(ChessPieceType.bishop, color),
-                ChessPiece(ChessPieceType.queen, color),
-                ChessPiece(ChessPieceType.king, color),
-                ChessPiece(ChessPieceType.bishop, color),
-                ChessPiece(ChessPieceType.knight, color),
-                ChessPiece(ChessPieceType.rook, color)
+                ChessPiece(ChessPieceType.rook, color, ChessSquare(1, row)),
+                ChessPiece(ChessPieceType.knight, color, ChessSquare(2, row)),
+                ChessPiece(ChessPieceType.bishop, color, ChessSquare(3, row)),
+                ChessPiece(ChessPieceType.queen, color, ChessSquare(4, row)),
+                ChessPiece(ChessPieceType.king, color, ChessSquare(5, row)),
+                ChessPiece(ChessPieceType.bishop, color, ChessSquare(6, row)),
+                ChessPiece(ChessPieceType.knight, color, ChessSquare(7, row)),
+                ChessPiece(ChessPieceType.rook, color, ChessSquare(8, row))
             ]
         
         self.__clear_board__()
-        self.rows[-1] = get_back_row(ChessPieceColor.white)
-        self.rows[-2] = get_pawn_row(ChessPieceColor.white)
-        self.rows[0] = get_back_row(ChessPieceColor.black)
-        self.rows[1] = get_pawn_row(ChessPieceColor.black)
+        self.pieces += get_pawn_row(ChessPieceColor.white, 2)
+        self.pieces += get_pawn_row(ChessPieceColor.black, 7)
+        self.pieces += get_back_row(ChessPieceColor.white, 1)
+        self.pieces += get_back_row(ChessPieceColor.black, 8)
 
 
     def to_fen(self) -> str:
@@ -59,23 +58,23 @@ class ChessBoard:
         res: str = str()
         empty_squares: int = 0
         
-        # small helper-function
-        def flush_empty_squares_if() -> None:
-            nonlocal res, empty_squares
-            if (empty_squares != 0):
-                res += str(empty_squares)
-                empty_squares = 0
+        # # small helper-function
+        # def flush_empty_squares_if() -> None:
+        #     nonlocal res, empty_squares
+        #     if (empty_squares != 0):
+        #         res += str(empty_squares)
+        #         empty_squares = 0
 
-        for row in self.rows:
-            for square in row:
-                if square is None:
-                    empty_squares += 1
-                else:
-                    flush_empty_squares_if()
-                    res += square.to_fen()
-            flush_empty_squares_if()
-            if (row is not self.rows[-1]):
-                res += "/"
+        # for row in self.rows:
+        #     for square in row:
+        #         if square is None:
+        #             empty_squares += 1
+        #         else:
+        #             flush_empty_squares_if()
+        #             res += square.to_fen()
+        #     flush_empty_squares_if()
+        #     if (row is not self.rows[-1]):
+        #         res += "/"
         return res
 
     """

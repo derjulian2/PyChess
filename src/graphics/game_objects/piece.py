@@ -1,8 +1,11 @@
 
+from typing import Self
+
 import gamelogic.piece as logic
 
 from graphics.game_objects.draggable import *
 from asset_manager import AssetManager
+
 
 class ChessPiece(Draggable, GameObject):
     """
@@ -13,8 +16,12 @@ class ChessPiece(Draggable, GameObject):
                  asset_manager: AssetManager,
                  piece: logic.ChessPiece,
                  pos: tuple[int, int],
-                 size: float) -> None:
-        Draggable.__init__(self, asset_manager, Rect(pos, (size, size))),
+                 size: float,
+                 on_drag_end: Optional[Callable[[tuple[int, int], Self], None]] = None) -> None:
+        Draggable.__init__(self, 
+                           asset_manager, 
+                           Rect(pos, (size, size)),  
+                           on_drag_end=lambda pos: on_drag_end(pos, self))
         GameObject.__init__(self, asset_manager, self.bounding_box)
         self.logical_piece: logic.ChessPiece = piece # the corresponding piece in the game-logic
         self.image: Surface                  = None

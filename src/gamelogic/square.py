@@ -7,10 +7,26 @@ class ChessSquare:
     """
 
     def __init__(self, column: int, row: int):
+        if (column <= 0 or row <= 0):
+            raise ValueError("row or column cannot be negative or zero")
         self.column = column
         self.row    = row
         
     
+    def get_column(self) -> int:
+        """
+        returns an integer indicating the column of the square (from white's perspective, left).
+        """
+        return self.column
+
+
+    def get_row(self) -> int:
+        """
+        returns an integer indicating the row of the square (from white's perspective, down).
+        """
+        return self.row
+
+
     def __eq__(self, other) -> bool:
         """
         equality-operator. row and column must match.
