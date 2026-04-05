@@ -78,7 +78,7 @@ class ChessBoard(GameObject):
             piece.draw(target)
 
 
-    def __set_position_from_board__(self):
+    def __set_position_from_board__(self) -> None:
         """
         resets the shown position from the position
         contained in the attached logical chess-board.
@@ -90,7 +90,7 @@ class ChessBoard(GameObject):
                              piece,
                              self.__get_square_rect__(piece.get_square()).topleft,
                              self.__get_square_sidelen__(),
-                             on_drag_end=lambda pos, piece: self.__callback_snap_piece_to_grid__(pos, piece))
+                             on_drag_end=lambda pos, dragged_piece: self.__callback_snap_piece_to_grid__(pos, dragged_piece))
             self.pieces.append(tmp)
 
 
@@ -125,6 +125,10 @@ class ChessBoard(GameObject):
         board_topleft = self.bounding_box.topleft
         tmp = ( int((pos[0] - board_topleft[0]) / self.__get_square_sidelen__()) + 1, 
                -int((pos[1] - board_topleft[1]) / self.__get_square_sidelen__()) + self.logical_board.board_rows)
+        if (tmp[0] <= 0 or tmp[1] <= 0 or
+            tmp[0] > self.logical_board.board_columns or
+            tmp[1] > self.logical_board.board_rows):
+            raise ValueError("position not on a chess-square")
         return logic.ChessSquare(tmp[0], tmp[1])
 
 
@@ -133,9 +137,13 @@ class ChessBoard(GameObject):
         callback to be passed to ChessPiece.on_drag_end. snaps the piece
         to the chess-grid from a screen-position.
         """
-        square = self.__get_square_from_screen_pos__(pos)
-        target = self.__get_square_rect__(square)
-        piece.bounding_box.topleft = target.topleft
+        try:
+            square = self.__get_square_from_screen_pos__(pos)
+            target = self.__get_square_rect__(square)
+            piece.bounding_box.topleft = target.topleft
+        except: # move out-of-bounds, set back to original pos
+            source = self.__get_square_rect__(piece.logical_piece.square)
+            piece.bounding_box.topleft = source.topleft
 
 
     def rebuild(self) -> None:

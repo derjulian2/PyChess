@@ -1,5 +1,5 @@
 
-from pygame import *
+from pygame import image, Surface
 
 from typing import Any
 from os import PathLike

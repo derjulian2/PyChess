@@ -1,7 +1,6 @@
 
-from gamelogic.common import *
-from gamelogic.square import *
-from gamelogic.move import *
+from gamelogic.common import ChessPieceType, ChessPieceColor
+from gamelogic.square import ChessSquare
 
 class ChessPiece:
     """

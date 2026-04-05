@@ -7,7 +7,7 @@ from graphics.game_objects.draggable import *
 from asset_manager import AssetManager
 
 
-class ChessPiece(Draggable, GameObject):
+class ChessPiece(Draggable):
     """
     object for a moveable chess-piece.
     """
@@ -18,11 +18,9 @@ class ChessPiece(Draggable, GameObject):
                  pos: tuple[int, int],
                  size: float,
                  on_drag_end: Optional[Callable[[tuple[int, int], Self], None]] = None) -> None:
-        Draggable.__init__(self, 
-                           asset_manager, 
-                           Rect(pos, (size, size)),  
-                           on_drag_end=lambda pos: on_drag_end(pos, self))
-        GameObject.__init__(self, asset_manager, self.bounding_box)
+        super().__init__(asset_manager, 
+                         Rect(pos, (size, size)),  
+                         on_drag_end=lambda pos: on_drag_end(pos, self))
         self.logical_piece: logic.ChessPiece = piece # the corresponding piece in the game-logic
         self.image: Surface                  = None
         self.__fit_image__()

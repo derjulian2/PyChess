@@ -6,6 +6,9 @@ class GameObject:
     """
     abstract-base-class for any game-object
     to be saved as part of a scene.
+
+    maybe change this to a component-based system i.e. 
+    every game-object has a list of components that it stores.
     """
 
     def __init__(self,

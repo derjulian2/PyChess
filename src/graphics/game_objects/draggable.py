@@ -16,9 +16,11 @@ class Draggable(GameObject):
     def __init__(self, 
                  asset_manager: AssetManager,
                  bounding_box: Rect,
+                 color: Color | None = None, 
+                 layer: int = 0,
                  on_drag_start: Optional[Callable[[tuple[int, int]], None]] = None,
                  on_drag_end: Optional[Callable[[tuple[int, int]], None]] = None) -> None:
-        super().__init__(asset_manager, bounding_box)
+        super().__init__(asset_manager, bounding_box, color, layer)
         self.is_dragging: bool = False
         self.on_drag_start: Optional[Callable[[tuple[int, int]], None]] = on_drag_start
         self.on_drag_end: Optional[Callable[[tuple[int, int]], None]]   = on_drag_end
