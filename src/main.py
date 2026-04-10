@@ -1,14 +1,16 @@
 
-from app import App
-from graphics.scenes.board import ChessBoardScene
+# from app import App
+# from graphics.scenes.board import ChessBoardScene
 
-import pygame
+# import pygame
 
-if __name__ == "__main__":
-    pygame.init()
-    app: App = App()
-    app.change_scene(ChessBoardScene)
-    app.exec()
-    pygame.quit()
+# if __name__ == "__main__":
+#     pygame.init()
+#     app: App = App()
+#     app.change_scene(ChessBoardScene)
+#     app.exec()
+#     pygame.quit()
 
+# from gamelogic.game import ChessGame
 
+# game = ChessGame()

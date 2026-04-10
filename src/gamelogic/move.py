@@ -1,88 +1,152 @@
 
-from gamelogic.common import *
+from gamelogic.piece import ChessPiece, ChessPieceType, ChessPieceColor
 from gamelogic.square import ChessSquare
-from enum import Enum
+from gamelogic.board import ChessBoard
 
-import re
+from typing import Callable, Optional
 
-"""
-algebraic-chess-notation implemented with regular expressions.
-maybe you can put this in a parser-generator and get something better from that?
-doing this by hand is cumbersome, that's why regex.
-
-[[:check_or_checkmate:]  := [#+]?
-[[:kingside_castling:]]  := \A(0-0|O-O)[[:check_or_checkmate:]]$
-[[:queenside_castling:]] := \A(0-0-0|O-O-O)[[:check_or_checkmate:]]$
-[[:castling:]]           := [[:kingside_castling:]]|[[:queenside_castling]]
-
-[[:takes:]] := [x]?
-[[:piece:]] := [NBRQK]
-[[:rank:]] := [a-h]
-[[:file:]] := [1-8]
-[[:target_square:]] := [:rank:][:file:]
-
-[[:pawn_move:]] := \A[[:takes:]][[:target_square:]][[:check_or_checkmate:]]$
-[[:piece_move:]] := \A[[:piece:]][[:takes:]][[:target_square:]][[:check_or_checkmate:]]$
-
-[[:move:]] := [[:castling:]]|[[:pawn_move:]]|[[:piece_move:]]
-
-the final move-regex will determine if a string encodes a valid chess-move. this
-does not mean that this move is possible to perform on the current position, but only
-that it is in legal algebraic chess notation.
-"""
-
-class ChessMoveType(Enum):
-    regular          = 0
-    capture          = 1
-    kingside_castle  = (1 << 1)
-    queenside_castle = (1 << 2)
-    promotion        = (1 << 3)
-    check            = (1 << 4)
-    checkmate        = (1 << 5)
-    
-class ChessAlgebraicNotationPatterns:
+class ChessPieceMovePattern:
     """
-    for determining wether a string encodes
-    a well-formed algebraic-chess-move we use regular-expressions.
-
-    if this determines a string to be 'well-formed' that doesn't
-    yet mean that the move is valid whatsoever. it just means, that
-    it fits the language-pattern, nothing more yet.
-
-    everything further will be decided on the board.
+    base-class for specifying how a chess-piece
+    can move on the board.
     """
-    rank             = r"[1-8]"
-    file             = r"[a-h]"
-    square           = rf"{file}{rank}"
-    
-    check            = r"[#+]"
-    takes            = r"[x]"
-    piece            = r"[NBRQK]"
-    promotion_pieces = r"[NBRQ]"
 
-    castle           = rf"([O0]-[O0])|([O0]-[O0]-[O0])"
-    regular_move     = (rf"(?P<piece>{piece})?"
-                        + rf"(?P<source>{file}|{rank}|{square})?"
-                        + rf"(?P<takes>{takes})?"
-                        + rf"(?P<target>{square})")
-    
-    promotion        = rf"(?P<promotion>(={promotion_pieces})|(\({promotion_pieces}\))|({promotion_pieces}))"
+    def __init__(self,
+                 sq_to_piece: Callable[[ChessSquare], Optional[ChessPiece]],
+                 dimensions: tuple[int, int],
+                 start_square: ChessSquare) -> None:
+        self.start_square: ChessSquare   = start_square
+        self.square_to_piece             = sq_to_piece
+        self.squares: list[ChessSquare]  = list()
+        self.__search__()
 
-    algebraic_move   = rf"^(?P<move>({regular_move}{promotion}?)|({castle}))(?P<check>{check})?$"
+    
+    def __blocked_by_ally__(self, sq: ChessSquare) -> bool:
+        piece    = self.square_to_piece(self.start_square)
+        sq_piece = self.square_to_piece(sq)
+        if (sq_piece):
+            return piece.get_color() == sq_piece.get_color()
+        return False
+
+
+    def __blocked_by_enemy__(self, sq: ChessSquare) -> bool:
+        piece    = self.square_to_piece(self.start_square)
+        sq_piece = self.square_to_piece(sq)
+        if (sq_piece):
+            return piece.get_color() != sq_piece.get_color()
+        return False
+
+
+    def __out_of_bounds__(self, sq: ChessSquare) -> bool:
+        pass
+
+
+    def __search__(self) -> None:
+        """
+        base-method to override.
+        should perform the actual search of reachable squares.
+        """
+        self.squares.clear()
+        if (not self.square_to_piece(self.start_square)):
+            return
+        match (self.get_piece().get_type()):
+            case (ChessPieceType.pawn):
+                pass
+            case (ChessPieceType.knight):
+                pass
+            case (ChessPieceType.bishop):
+                self.diagonals()
+            case (ChessPieceType.rook):
+                self.straights()
+            case (ChessPieceType.queen):
+                self.diagonals()
+                self.straights()
+            case (ChessPieceType.king):
+                self.adjacents()
+
+
+    def get_piece(self) -> ChessPiece:
+        pass
+
+
+    def adjacents(self) -> None:
+        for i in [ -1, 0, 1 ]:
+            for j in [ -1, 0, 1 ]:
+                if (i, j) != (0, 0):
+                    self.squares.append(self.start_square + (i, j))
+
+
+    def walk(self, dir: tuple[int, int]) -> None:
+        """
+        walks the board in the specified direction until
+        a blocked or out-of-bounds square occurs.
+
+        if the blocked square contains an allied piece, that square is not reachable,
+        if it contains an enemy piece, the square is attackable and therefore
+        contained in the result-list.
+        """
+        sq = self.start_square + dir
+        while (not self.__out_of_bounds__(sq)):
+            if (self.__blocked_by_enemy__(sq)):
+                self.squares.append(sq)
+                break
+            elif (self.__blocked_by_ally__(sq)):
+                break
+            else:
+                self.squares.append(sq)
+                sq = sq + dir
+    
+
+    def straights(self) -> None:
+        """
+        walks straight into all 4 directions.
+        """
+        directions = [ (1, 0), (-1, 0), (0, 1), (0, -1) ]
+        for dir in directions:
+            self.walk(dir)
+
+
+    def diagonals(self) -> list[ChessSquare]:
+        """
+        walks diagonal into all 4 directions.
+        """
+        directions = [ (1, 1), (-1, 1), (1, -1), (-1, -1) ]
+        for dir in directions:
+            self.walk(dir)
+            
+
+    def get_reachable_squares(self) -> list[ChessSquare]:
+        """
+        :returns: a list of reachable squares from the piece contained in the starting square.
+        """
+        return self.squares
+
 
 
 class ChessMove:
+    """
+    an object representing a move on a chess-board
+    defined by a starting-square and an end-square.
+    """
 
 
-    def __init__(self) -> None:
-        self.target_square: ChessSquare
-        self.piece: ChessPieceType
-        self.type: ChessMoveType
+    def __init__(self,
+                 source_square: ChessSquare,
+                 target_square: ChessSquare) -> None:
+        self.source_square: ChessSquare          = source_square
+        self.target_square: ChessSquare          = target_square
+        self.__validate__()
 
 
-    @classmethod
-    def from_algebraic(cls, move: str):
+    def get_source_square(self) -> ChessSquare:
         """
-        constructs a move from algebraic chess-notation.
+        :returns: the square that contains the piece to be moved.
         """
-        pass
+        return self.source_square
+    
+
+    def get_target_square(self) -> ChessSquare:
+        """
+        :returns: the square to which the piece should be moved.
+        """
+        return self.target_square

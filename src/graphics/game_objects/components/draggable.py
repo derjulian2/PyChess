@@ -4,7 +4,8 @@ from graphics.game_objects.game_object import *
 
 import pygame
 
-class Draggable(GameObject):
+
+class DraggableComponent(GameObject):
     """
     base-class for any draggable game-object.
     
