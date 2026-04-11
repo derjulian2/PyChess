@@ -13,4 +13,19 @@
 
 # from gamelogic.game import ChessGame
 
+# from utility.vec import vec2i, vec
+
 # game = ChessGame()
+
+# game.make_move(((5, 2), (5, 4)))
+
+
+ 
+
+
+
+
+
+
+
+

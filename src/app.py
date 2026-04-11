@@ -5,25 +5,25 @@ from pygame_gui import *
 from graphics.scenes.scene import *
 from asset_manager import AssetManager
 
-from gamelogic.piece import ChessPieceType, ChessPieceColor
+from gamelogic.piece import ChessPieceType, ChessColor
 
 """
 the chess-piece-images to be loaded by the AssetManager.
 """
 chess_piece_image_paths = {
-    (ChessPieceColor.white, ChessPieceType.pawn)   : "assets/white-pawn.png",
-    (ChessPieceColor.white, ChessPieceType.knight) : "assets/white-knight.png",
-    (ChessPieceColor.white, ChessPieceType.bishop) : "assets/white-bishop.png",
-    (ChessPieceColor.white, ChessPieceType.rook)   : "assets/white-rook.png",
-    (ChessPieceColor.white, ChessPieceType.queen)  : "assets/white-queen.png",
-    (ChessPieceColor.white, ChessPieceType.king)   : "assets/white-king.png",
+    (ChessColor.white, ChessPieceType.pawn)   : "assets/white-pawn.png",
+    (ChessColor.white, ChessPieceType.knight) : "assets/white-knight.png",
+    (ChessColor.white, ChessPieceType.bishop) : "assets/white-bishop.png",
+    (ChessColor.white, ChessPieceType.rook)   : "assets/white-rook.png",
+    (ChessColor.white, ChessPieceType.queen)  : "assets/white-queen.png",
+    (ChessColor.white, ChessPieceType.king)   : "assets/white-king.png",
 
-    (ChessPieceColor.black, ChessPieceType.pawn)   : "assets/black-pawn.png",
-    (ChessPieceColor.black, ChessPieceType.knight) : "assets/black-knight.png",
-    (ChessPieceColor.black, ChessPieceType.bishop) : "assets/black-bishop.png",
-    (ChessPieceColor.black, ChessPieceType.rook)   : "assets/black-rook.png",
-    (ChessPieceColor.black, ChessPieceType.queen)  : "assets/black-queen.png",
-    (ChessPieceColor.black, ChessPieceType.king)   : "assets/black-king.png"
+    (ChessColor.black, ChessPieceType.pawn)   : "assets/black-pawn.png",
+    (ChessColor.black, ChessPieceType.knight) : "assets/black-knight.png",
+    (ChessColor.black, ChessPieceType.bishop) : "assets/black-bishop.png",
+    (ChessColor.black, ChessPieceType.rook)   : "assets/black-rook.png",
+    (ChessColor.black, ChessPieceType.queen)  : "assets/black-queen.png",
+    (ChessColor.black, ChessPieceType.king)   : "assets/black-king.png"
 }
 
 

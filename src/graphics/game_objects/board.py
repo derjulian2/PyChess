@@ -108,8 +108,8 @@ class ChessBoard(GameObject):
         """
         board_topleft  = self.bounding_box.topleft
         # offset by one to get zero for first row/column
-        cols = (square.get_column() - 1)
-        rows = (self.logical_board.board_rows - square.get_row())
+        cols = (square.get_file() - 1)
+        rows = (self.logical_board.board_rows - square.get_rank())
         square_topleft = (board_topleft[0] + cols * self.__get_square_sidelen__(),
                           board_topleft[1] + rows * self.__get_square_sidelen__()) 
         return Rect(square_topleft, (self.__get_square_sidelen__(), self.__get_square_sidelen__()))

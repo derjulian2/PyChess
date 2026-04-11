@@ -2,7 +2,7 @@
 from graphics.scenes.scene import Scene
 from graphics.game_objects.board import ChessBoard
 
-import gamelogic.game as logic
+import gamelogic.game_old as logic
 
 from pygame_gui import UIManager
 from asset_manager import AssetManager

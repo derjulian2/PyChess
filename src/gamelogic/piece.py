@@ -8,6 +8,8 @@ class ChessPieceType(Enum):
     enum encoding the types
     of chess-pieces.
     """
+
+
     pawn   = 0
     knight = 1
     bishop = 2
@@ -17,32 +19,19 @@ class ChessPieceType(Enum):
 
 
 
-class ChessPieceColor(Enum):
+class ChessColor(Enum):
     """
     enum encoding the
     color of chess-pieces.
     """
+
+    
     white = 0
     black = 1
 
 
-    def __not__(self) -> Self:
-        """
-        :returns: toggles from black to white and vice-versa.
-        """
-        if (self.value == ChessPieceColor.white):
-            self.value = ChessPieceColor.black
-        else:
-            self.value = ChessPieceColor.white
-
-
-
-class ChessPlayerColor(ChessPieceColor): 
-    """
-    type-alias indicating a player-color
-    rather than a piece-color.
-    """
-    pass
+    def invert(self) -> Self:
+        return ChessColor(not self.value)
 
 
 
@@ -55,9 +44,9 @@ class ChessPiece:
 
     def __init__(self, 
                  type: ChessPieceType, 
-                 color: ChessPieceColor) -> None:
+                 color: ChessColor) -> None:
         self.type: ChessPieceType   = type
-        self.color: ChessPieceColor = color
+        self.color: ChessColor      = color
 
 
     def __str__(self) -> str:
@@ -80,7 +69,7 @@ class ChessPiece:
                 res = "Q"
             case (ChessPieceType.king):
                 res = "K"
-        if (self.get_color() == ChessPieceColor.black):
+        if (self.get_color() == ChessColor.black):
             res = res.lower()
         return res
 
@@ -92,7 +81,7 @@ class ChessPiece:
         return self.type
 
 
-    def get_color(self) -> ChessPieceColor:
+    def get_color(self) -> ChessColor:
         """
         getter for piece-color.
         """
