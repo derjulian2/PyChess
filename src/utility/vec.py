@@ -16,7 +16,8 @@ class vec(Generic[T]):
 
 
     def __init__(self, 
-                 *args, 
+                 *args,
+                 default_value: Optional[T] = None,
                  max_len: Optional[int] = None) -> None:
         """
         initialization from iterable or multiple arguments of T:
@@ -24,12 +25,11 @@ class vec(Generic[T]):
             vec[T]([1, 2, 3]) -> [1, 2, 3]
             vec[T]((1, 2, 3)) -> [1, 2, 3]
         """
-        self.data: list[T] = list()
-        self.length: int   = 0
+        self.data: list[T]              = list()
+        self.length: int                = 0
+        self.default_value: Optional[T] = default_value
         if (len(args) == 1 and isinstance(args[0], Iterable)):
             self.from_iterable(args[0], max_len=max_len)
-        elif (len(args) == 1 and isinstance(args[0], int)):
-            self.resize(args[0])
         elif (len(args) > 0):
             self.from_iterable(args, max_len=max_len)
 
@@ -43,7 +43,7 @@ class vec(Generic[T]):
 
 
     def __componentwise_op_unary__(self, op: Callable[[T], T]) -> Self:
-        tmp: Self = deepcopy(self)
+        tmp: Self = deepcopy(self) # deepcopy to avoid problems with inheritance
         for i in range(len(self)):
             tmp[i] = op(self[i])
         return tmp
@@ -54,10 +54,10 @@ class vec(Generic[T]):
         creates a new vector-instance and initializes
         every element to op(a[i], b[i]).
         """
-        min_len = min(len(self), len(other))
-        tmp: Self = deepcopy(self)
-        tmp.resize(min_len)
-        for i in range(min_len):
+        if (len(self) != len(other)):
+            raise ValueError("cannot operate on vectors of different sizes")
+        tmp: Self = deepcopy(self) # deepcopy to avoid problems with inheritance
+        for i in range(len(self)):
             tmp[i] = op(self[i], other[i])
         return tmp
 
@@ -124,7 +124,7 @@ class vec(Generic[T]):
         """
         self.data.clear()
         for _ in range(len(self)):
-            self.data.append(None)
+            self.data.append(copy(self.default_value))
 
 
     def resize(self, length: int) -> None:
@@ -136,7 +136,7 @@ class vec(Generic[T]):
         diff = abs(len(self) - length)
         if (length > len(self)):
             for _ in range(diff):
-                self.data.append(None)
+                self.data.append(copy(self.default_value))
         elif (length < len(self)):
             for _ in range(diff):
                 self.data.pop()
@@ -167,10 +167,13 @@ class vec(Generic[T]):
 
 
 class vec2(vec[T]):
+    """
+    specialization for 2-element-vectors.
+    """
 
 
-    def __init__(self, *args) -> None:
-        super().__init__(*args, max_len=2)
+    def __init__(self, *args, default_value: Optional[T] = None) -> None:
+        super().__init__(*args, default_value=default_value, max_len=2)
 
 
     @property
@@ -193,5 +196,23 @@ class vec2(vec[T]):
         self[1] = v
 
 
-vec2i: TypeAlias = vec2[int]
-vec2f: TypeAlias = vec2[float]
+
+class vec2i(vec2[int]):
+    """
+    specialization for 2-element integer-vectors.
+    """
+
+
+    def __init__(self, *args):
+        super().__init__(*args, default_value=0)
+
+
+
+class vec2f(vec2[float]):
+    """
+    specialization for 2-element float-vectors.
+    """
+
+
+    def __init__(self, *args):
+        super().__init__(*args, default_value=0.0)

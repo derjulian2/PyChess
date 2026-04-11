@@ -14,14 +14,18 @@ class VecTests:
         v = vec[int]((2, 3, 4))
         u = vec[int]([2, 3, 4])
         k = vec[int](1, 2)
-        t = vec[int](4)
+        t = vec[int](default_value=2)
+        t.resize(4)
         l = vec[int](v)
+        m = vec2i()
+        m.resize(3)
 
         UnitTest.assert_eq(str(v), "[2, 3, 4]")
         UnitTest.assert_eq(str(u), "[2, 3, 4]")
         UnitTest.assert_eq(str(k), "[1, 2]")
         UnitTest.assert_eq(str(l), str(v))
-        UnitTest.assert_eq(str(t), "[None, None, None, None]")
+        UnitTest.assert_eq(str(t), "[2, 2, 2, 2]")
+        UnitTest.assert_eq(str(m), "[0, 0, 0]")
 
 
     @unit_test
