@@ -26,6 +26,7 @@ class VecTests:
         UnitTest.assert_eq(str(l), str(v))
         UnitTest.assert_eq(str(t), "[2, 2, 2, 2]")
         UnitTest.assert_eq(str(m), "[0, 0, 0]")
+        UnitTest.assert_eq(eval(repr(v)), v)
 
 
     @unit_test

@@ -1,11 +1,12 @@
 
 from gamelogic.piece  import ChessColor, ChessColor, ChessPieceType
 from gamelogic.square import ChessSquare
-from gamelogic.board  import ChessBoard, ChessBoardNavigator
+from gamelogic.board  import ChessBoard
 from gamelogic.move   import ChessMove, InvalidMoveError, ChessMoveCastle, ChessMovePromotion
 
 from typing import Optional
 from copy import copy
+
 
 class ChessGameProgress:
 
@@ -16,10 +17,125 @@ class ChessGameProgress:
     def in_progress(self) -> bool:
         pass
 
+
+
 class ChessGameCastlingRights:
 
     def __init__(self) -> None:
         pass
+
+
+
+class ChessRule:
+    """
+    object that models a rule
+    that has to be obeyed when
+    making a move.
+    """
+
+    def __init__(self, board: ChessBoard) -> None:
+        self.board: ChessBoard = board
+
+
+    def violated_by(self, mv: ChessMove) -> bool:
+        pass
+
+
+class BoundsRule(ChessRule):
+    """
+    a move cannot start or end
+    out-of-bounds.
+    """
+
+    def violated_by(self, mv: ChessMove) -> bool:
+        return (self.board.is_out_of_bounds(mv.get_source_square()) or
+                self.board.is_out_of_bounds(mv.get_target_square()))
+    
+
+class PieceRule(ChessRule):
+    """
+    a move cannot start from an
+    empty square.
+    """
+
+    def violated_by(self, mv: ChessMove) -> bool:
+        return not self.board.has_piece(mv.get_source_square())
+    
+
+class AlliedPieceRule(ChessRule):
+    """
+    a move cannot take an allied piece.
+    """
+
+    def violated_by(self, mv: ChessMove) -> bool:
+        if (self.board.has_piece(mv.get_target_square())):
+            src_piece = self.board.get_piece(mv.get_source_square())
+            tgt_piece = self.board.get_piece(mv.get_target_square())
+            return src_piece.get_color() == tgt_piece.get_color()
+        
+
+class KingRule(ChessRule):
+    """
+    a move cannot take a king-piece.
+    """
+
+    def violated_by(self, mv: ChessMove) -> bool:
+        if (self.board.has_piece(mv.get_target_square())):
+            src_piece = self.board.get_piece(mv.get_source_square())
+            tgt_piece = self.board.get_piece(mv.get_target_square())
+            return tgt_piece.get_type() == ChessPieceType.king
+        
+
+class InCheckRule(ChessRule):
+    """
+    the king cannot move
+    to a square that would result in
+    him being takeable in the next move.
+    """
+
+    def violated_by(self, mv: ChessMove) -> bool:
+        src_piece = self.board.get_piece(mv.get_source_square())
+        if (src_piece.get_type() == ChessPieceType.king):
+            return self.board.is_attacked(src_piece.get_color(), mv.get_target_square())
+        
+
+class ResolveCheckRule(ChessRule):
+    """
+    a move is invalid if the king is currently 
+    in check, but the played move
+    does not resolve that check.
+    """
+
+    def violated_by(self, mv: ChessMove) -> bool:
+        src_piece = self.board.get_piece(mv.get_source_square())
+        if (self.board.is_in_check(src_piece.get_color())):
+            cpy = copy(self.board)
+            cpy.apply_move(mv)
+            return cpy.is_in_check(src_piece.get_color())
+        return False
+
+
+class ReachableRule(ChessRule):
+
+    
+    def violated_by(self, mv: ChessMove) -> bool:
+        return mv.get_target_square() not in self.board.find_reachable_squares(mv.get_source_square())
+
+
+class CastlingRule(ChessRule):
+
+    pass
+
+
+class PromotionRule(ChessRule):
+
+    pass
+
+
+class EnPassantRule(ChessRule):
+
+    pass
+
 
 class ChessGame:
 
@@ -27,101 +143,33 @@ class ChessGame:
     def __init__(self) -> None:
         self.state: ChessGameProgress      = ChessGameProgress()
         self.board: ChessBoard             = ChessBoard()
-        self.rule50                        = 0
+        self.rules: list[ChessRule]        = [
+            BoundsRule(self.board),
+            PieceRule(self.board),
+            AlliedPieceRule(self.board),
+            KingRule(self.board),
+            InCheckRule(self.board),
+            ResolveCheckRule(self.board)
+        ]
         
-        self.player_to_move: ChessColor         = ChessColor.white
+        self.player_to_move: ChessColor               = ChessColor.white
         self.en_passant: Optional[ChessSquare]        = None
         self.castling_rights: ChessGameCastlingRights = ChessGameCastlingRights()
-        self.in_check: bool                           = False
         
 
     def __switch_player__(self) -> None:
         self.player_to_move = not self.player_to_move
 
 
-    def __is_square_attacked__(self, sq: ChessSquare) -> None:
-        for square, piece in self.board.get_pieces(color=not self.player_to_move):
-            navigator = ChessBoardNavigator(self.board, square)
-            if (sq in navigator.get_attackable_squares()):
-                return True
-        return False
-
-
-    def __resolve_check_state__(self) -> None:
-        king_square = self.board.get_king_square(self.player_to_move)
-        if (king_square and self.__is_square_attacked__(king_square[0])):
-            self.in_check = True
-        else:
-            self.in_check = False
-
-
-    def __resolve_en_passant__(self) -> None:
-        move = self.__last_move__()
-        piece = self.board.get_piece(move.get_source_square())
-        if ((piece.get_type() == ChessPieceType.pawn) and
-            (abs(move.get_source_square() - move.get_target_square()) == (0, 2))):
-            adjacent_squares = [ move.get_target_square() + (1, 0), move.get_target_square() + (-1, 0) ]
-            for sq in adjacent_squares:
-                if (not self.board.__out_of_bounds__(sq)):
-                    other_piece = self.board.get_piece(sq)
-                    if (other_piece.get_type() == ChessPieceType.pawn
-                        and other_piece.get_color() != piece.get_color()):
-                        self.en_passant = move.get_target_square()
-        else:
-            self.en_passant = None
-
-
-    def __resolves_check__(self, move: ChessMove) -> bool:
-        """
-        applies the passed move to a copy of the current board
-        and
-        """
-        return not self.__would_be_in_check__(move)
-
-
-    def __would_be_in_check__(self, move: ChessMove) -> bool:
-        """
-        applies the passed move to a copy of the current board
-        and returns if the king would be in check in that position.
-        """
-        board_cpy = copy(self.board)
-        board_cpy.apply_move(move)
-        king_square = board_cpy.get_king_square(self.player_to_move)
-        if (king_square and self.__is_square_attacked__(king_square[0])):
-            return True
-        return False
-
-
-    def __resolve_castling_rights__(self) -> None:
-        if (isinstance(self.__last_move__(), ChessMoveCastle)):
-            pass
-
-    
-    def __last_move__(self) -> ChessMove:
-        return self.move_history[-1]
-
-
     def __update_game__(self) -> None:
-        self.__resolve_check_state__()
-        self.__resolve_en_passant__()
-        self.__resolve_castling_rights__()
         self.__switch_player__()
 
 
-    def __validate_move__(self, move: ChessMove) -> bool:
-        navigator = ChessBoardNavigator(self.board, move.get_source_square())
-        # regular move-handling: if square is reachable
-        if (self.in_check):
-            pass # somehow handle if move resolves check or not
-        # also account for if the move would get king into check
-        if (move.get_target_square() in navigator.get_all_squares()):
-            return True
-        # extra-rules: castling, en-passant, etc.
-        if (isinstance(move, ChessMoveCastle)):
-            pass
-        elif (isinstance(move, ChessMovePromotion)):
-            pass
-        return False
+    def __validate_move__(self, mv: ChessMove) -> bool:
+        for rule in self.rules:
+            if (rule.violated_by(mv)):
+                return False
+        return True
     
 
     def make_move(self, move: ChessMove) -> None:

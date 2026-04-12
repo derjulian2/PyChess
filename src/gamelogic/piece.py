@@ -49,31 +49,6 @@ class ChessPiece:
         self.color: ChessColor      = color
 
 
-    def __str__(self) -> str:
-        """
-        conversion to string.
-        :returns: a single character denoting the type
-                  and color of the piece. 
-                  lowercase for black, uppercase for white.
-        """
-        match (self.get_type()):
-            case (ChessPieceType.pawn):
-                res = "P"
-            case (ChessPieceType.knight):
-                res = "N"
-            case (ChessPieceType.bishop):
-                res = "B"
-            case (ChessPieceType.rook):
-                res = "R"
-            case (ChessPieceType.queen):
-                res = "Q"
-            case (ChessPieceType.king):
-                res = "K"
-        if (self.get_color() == ChessColor.black):
-            res = res.lower()
-        return res
-
-
     def get_type(self) -> ChessPieceType:
         """
         getter for the type of piece.

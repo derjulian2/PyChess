@@ -29,6 +29,10 @@ class ChessSquare(vec2i):
         string conversion. always to board-coordinates.
         """
         return self.to_board()
+    
+
+    def __repr__(self) -> str:
+        return f"ChessSquare('{self.to_board()}')"
 
 
     def get_file(self) -> int:

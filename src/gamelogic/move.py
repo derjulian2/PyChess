@@ -1,7 +1,7 @@
 
 from gamelogic.piece import ChessPiece, ChessPieceType, ChessColor
 from gamelogic.square import ChessSquare
-from utility.vec import vec, vec2i
+from utility.vec import vec2
 
 from typing import Callable, Optional, Iterable, Self
 from enum import Enum
@@ -17,31 +17,29 @@ class InvalidMoveError(Exception):
 
 
 
-class ChessMove(vec[ChessSquare]):
+class ChessMove(vec2[ChessSquare]):
     """
     an object representing a move on a chess-board
     defined by a starting-square and an end-square.
     """
 
 
-    def __init__(self, squares: Iterable) -> None:
-        if (len(squares) != 2):
-            raise ValueError("move must consist of a source and target-square")
-        super().__init__(2, squares)
+    def __init__(self, *args) -> None:
+        super().__init__(*args)
 
 
     def get_source_square(self) -> ChessSquare:
         """
         :returns: the square that contains the piece to be moved.
         """
-        return self[0]
+        return self.x
     
 
     def get_target_square(self) -> ChessSquare:
         """
         :returns: the square to which the piece should be moved.
         """
-        return self[1]
+        return self.y
     
 
 

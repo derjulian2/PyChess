@@ -28,8 +28,18 @@ class vec(Generic[T]):
         self.data: list[T]              = list()
         self.length: int                = 0
         self.default_value: Optional[T] = default_value
+        # from a single iterable
         if (len(args) == 1 and isinstance(args[0], Iterable)):
             self.from_iterable(args[0], max_len=max_len)
+        # from repr()-string
+        elif (len(args) == 3
+              and isinstance(args[0], str)
+              and isinstance(args[1], str)
+              and isinstance(args[2], str)):
+            self.data          = eval(args[0])
+            self.length        = eval(args[1])
+            self.default_value = eval(args[2])
+        # from multiple arguments
         elif (len(args) > 0):
             self.from_iterable(args, max_len=max_len)
 
@@ -103,7 +113,7 @@ class vec(Generic[T]):
 
 
     def __repr__(self) -> str:
-        return f"vec(length={self.length}, data={self.data})"
+        return f"vec('{self.data}','{self.length}','{self.default_value}')"
 
 
     def __str__(self) -> str:

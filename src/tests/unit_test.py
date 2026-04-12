@@ -1,12 +1,13 @@
 
 from typing import Callable
 
+import traceback
 
 """
 global list to collect all methods marked @unit_test.
 """
 __test_methods__: list[Callable[..., None]] = list()
-__test_errors__: list[tuple[Callable, str]] = list()
+__test_errors__: list[tuple[Callable, Exception, str]] = list()
 
 
 class TestFailedError(Exception):
@@ -55,7 +56,7 @@ def unit_test(func: Callable[[], None]):
             print(f"unit-test of {func.__qualname__} ..... PASSED")
         except Exception as e:
             print(f"unit-test of {func.__qualname__} ..... FAILED")
-            __test_errors__.append((func, e))
+            __test_errors__.append((func, e, traceback.format_exc()))
     __test_methods__.append(__inner__)
     return __inner__
 
@@ -73,6 +74,7 @@ def run() -> None:
     print(f"results: {len(__test_methods__) - len(__test_errors__)} / {len(__test_methods__)} unit-tests successful")
     if (len(__test_errors__) != 0):
         print("errors: ")
-        for func, e in __test_errors__:
+        for func, e, tb in __test_errors__:
             print(f">>> {func.__qualname__}, raised error: {type(e).__name__} : {str(e)}")
+            print(tb)
     print("---------- ------------ ----------")
