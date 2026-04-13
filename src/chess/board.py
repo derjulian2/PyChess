@@ -142,15 +142,14 @@ class ChessBoard:
 
     def get_piece(self, sq: ChessSquare) -> Optional[ChessPiece]:
         """
-        indexed and safe-guarded
         access to squares in column-row/file-rank format.
         
         making the parameter be of type ChessSquare allows
-        ChessSquare.from_board('a1') to return the actual
+        ChessSquare('a1') to return the actual
         square corresponding to a1 here.
         
         :param sq: the square on the board to be queried.
-        :returns:  the square on the board corresponding
+        :returns:  the piece on the board corresponding
                    to the passed square-instance.
         """
         return self.pieces.get(sq)
@@ -188,17 +187,22 @@ class ChessBoard:
         """
         :returns: True if 'sq' is takeable from the perspective of the piece standing on 'st'.
                   a square is takeable if it is either empty or has 
-                  an opponent piece standing on it that is not the king.
+                  an opponent piece standing on it.
         """
         assert self.has_piece(st)
 
-        return ((not self.has_piece(sq)) or
-                (self.has_piece(sq) and 
-                 self.get_piece(sq).get_color() != self.get_piece(st).get_color() and 
-                 self.get_piece(sq).get_type() != ChessPieceType.king))
+        return (self.has_piece(sq) and
+                self.get_piece(sq).get_color() != self.get_piece(st).get_color())
                
 
-    def __walk_until_blocked__(self, sq: ChessSquare, dir: vec2i) -> list[ChessSquare]:
+    def __is_blocked__(self, sq: ChessSquare, st: ChessSquare) -> bool:
+        assert self.has_piece(st)
+
+        return (self.has_piece(sq) and
+                self.get_piece(sq).get_color() == self.get_piece(st).get_color())
+    
+
+    def walk_until_blocked(self, sq: ChessSquare, dir: vec2i) -> list[ChessSquare]:
         """
         :returns: a list of traversed squares (including the blocking square).
         """
@@ -206,14 +210,17 @@ class ChessBoard:
 
         res  = list()
         iter = sq + dir
-        while (not self.is_out_of_bounds(iter) and
-               self.__is_takeable__(iter, sq)):
+        while (not self.is_out_of_bounds(iter)):
+            if (self.__is_blocked__(iter, sq)):
+                break
             res.append(iter)
+            if (self.__is_takeable__(iter, sq)):
+                break
             iter = iter + dir
         return res
 
 
-    def __find_pawn_squares__(self, sq: ChessSquare) -> list[ChessSquare]:
+    def __find_pawn_takeable_squares__(self, sq: ChessSquare) -> list[ChessSquare]:
         assert self.has_piece(sq)
         assert self.get_piece(sq).get_type() == ChessPieceType.pawn
         
@@ -224,20 +231,40 @@ class ChessBoard:
             front = (0, 1)
         else:
             front = (0, -1)
-        # regular push
-        move_sq = sq + front
-        if (not (self.is_out_of_bounds(move_sq)) and 
-            not (self.has_piece(move_sq))):
-            res.append(move_sq)
 
-        # attack-squares, only if opponent present
-        attack_squares = [ move_sq + (-1, 0), move_sq + (1, 0) ]
+        # attack-squares
+        attack_squares = [ sq + front + (1, 0), sq + front + (-1, 0) ]
         for tmp in attack_squares:
             if (not (self.is_out_of_bounds(tmp)) and
                     (self.__is_takeable__(tmp, sq))):
                 res.append(tmp)
 
-        return tmp
+        return res
+    
+
+    def __find_pawn_reachable_squares__(self, sq: ChessSquare) -> list[ChessSquare]:
+        assert self.has_piece(sq)
+        assert self.get_piece(sq).get_type() == ChessPieceType.pawn
+        
+        # en-passant cannot be inferred from a board's position, this
+        # information must be stored in the game-logic.
+        res = list()
+        if (self.get_piece(sq).get_color() == ChessColor.white):
+            front = vec2i(0, 1)
+        else:
+            front = vec2i(0, -1)
+
+        # regular push, one or two squares
+        push_squares = [ sq + front, sq + 2 * front ]
+        if (not (self.is_out_of_bounds(push_squares[0])) and
+            not (self.has_piece(push_squares[0]))):
+            res.append(push_squares[0])
+            if (not (self.is_out_of_bounds(push_squares[1])) and
+                not (self.has_piece(push_squares[1])) and
+                    (sq.get_rank() == self.get_initial_pawn_rank(self.get_piece(sq).get_color()))):
+                res.append(push_squares[1])
+
+        return res
     
 
     def __find_knight_squares__(self, sq: ChessSquare) -> list[ChessSquare]:
@@ -254,7 +281,8 @@ class ChessBoard:
                 for dir2 in dir[1]:
                     tmp = sq + dir1 + dir2
                     if (not self.is_out_of_bounds(tmp) and
-                            self.__is_takeable__(tmp, sq)):
+                       (not self.has_piece(tmp) or
+                            self.__is_takeable__(tmp, sq))):
                         res.append(tmp)
         return res
 
@@ -266,7 +294,7 @@ class ChessBoard:
         directions = [ (1, 1), (-1, 1), (1, -1), (-1, -1) ]
         res = list()
         for dir in directions:
-            res += self.__walk_until_blocked__(sq, dir)
+            res += self.walk_until_blocked(sq, dir)
         return res
 
 
@@ -277,7 +305,7 @@ class ChessBoard:
         directions = [ (1, 0), (-1, 0), (0, 1), (0, -1) ]
         res = list()
         for dir in directions:
-            res += self.__walk_until_blocked__(sq, dir)
+            res += self.walk_until_blocked(sq, dir)
         return res
 
 
@@ -285,7 +313,11 @@ class ChessBoard:
         assert self.has_piece(sq)
         assert self.get_piece(sq).get_type() == ChessPieceType.queen
         
-        return self.__find_rook_squares__(sq) + self.__find_bishop_squares__(sq)
+        directions = [ (1, 0), (-1, 0), (0, 1), (0, -1) ] + [ (1, 1), (-1, 1), (1, -1), (-1, -1) ]
+        res = list()
+        for dir in directions:
+            res += self.walk_until_blocked(sq, dir)
+        return res
 
 
     def __find_king_squares__(self, sq: ChessSquare) -> list[ChessSquare]:
@@ -302,14 +334,15 @@ class ChessBoard:
         for dx in [-1, 0, 1]:
             for dy in [-1, 0, 1]:
                 tmp = sq + (dx, dy)
-                if (not (dx != 0 and dy != 0) and
+                if (not (dx == 0 and dy == 0) and
                     not self.is_out_of_bounds(tmp) and
-                        self.__is_takeable__(tmp, sq)):
+                   (not self.has_piece(tmp) or
+                        self.__is_takeable__(tmp, sq))):
                     res.append(tmp)
         return res
 
 
-    def find_takeable(self, sq: ChessSquare) -> list[ChessSquare]:
+    def find_reachable(self, sq: ChessSquare) -> list[ChessSquare]:
         """
         :returns: a list of all squares that can be reached
                   by the piece standing on 'sq' in a single move.
@@ -323,7 +356,38 @@ class ChessBoard:
             return list()
         match (self.get_piece(sq).get_type()):
             case (ChessPieceType.pawn):
-                return self.__find_pawn_squares__(sq)
+                return self.__find_pawn_reachable_squares__(sq)
+            case (ChessPieceType.knight):
+                return self.__find_knight_squares__(sq)
+            case (ChessPieceType.bishop):
+                return self.__find_bishop_squares__(sq)
+            case (ChessPieceType.rook):
+                return self.__find_rook_squares__(sq)
+            case (ChessPieceType.queen):
+                return self.__find_queen_squares__(sq)
+            case (ChessPieceType.king):
+                return self.__find_king_squares__(sq)
+            
+
+    def find_takeable(self, sq: ChessSquare) -> list[ChessSquare]:
+        """
+        :returns: a list of all squares that can be attacked
+                  by the piece standing on 'sq' in a single move.
+                  if there is no piece standing on 'sq', returns
+                  an empty list.
+
+                  this differs from find_reachable() most notably (and currently only)
+                  in the behaviour of pawns, where the regular 'reachable'
+                  squares differ from the 'attackable' squares.
+                  
+                  disregards en-passant for pawns.
+                  disregards check for kings.
+        """
+        if (not self.has_piece(sq)):
+            return list()
+        match (self.get_piece(sq).get_type()):
+            case (ChessPieceType.pawn):
+                return self.__find_pawn_takeable_squares__(sq)
             case (ChessPieceType.knight):
                 return self.__find_knight_squares__(sq)
             case (ChessPieceType.bishop):
@@ -339,7 +403,7 @@ class ChessBoard:
     def is_attacked(self, color: ChessColor, sq: ChessSquare) -> bool:
         """
         :returns: True if the passed square is attacked from 'color's perspective,
-                  meaning that a piece of the opponent's color can reach that square.
+                  meaning that a piece of the opponent's color could take that square in the next move.
         """
         opponent_pieces = self.get_pieces(color=not color)
         for square, piece in opponent_pieces:

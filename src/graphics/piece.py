@@ -1,5 +1,5 @@
 
-from graphics.entities.entity import Entity
+from graphics.entity import Entity
 from graphics.component import GameObjectComponent, DrawableComponent
 from graphics.draggable import DraggableComponent
 

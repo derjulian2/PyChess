@@ -4,7 +4,7 @@ from chess.square import ChessSquare
 from utility.vec import vec2
 
 from typing import Callable, Optional, Iterable, Self
-from enum import Enum
+from enum import Flag
 
 
 class InvalidMoveError(Exception):
@@ -22,7 +22,6 @@ class ChessMove(vec2[ChessSquare]):
     an object representing a move on a chess-board
     defined by a starting-square and an end-square.
     """
-
 
     def __init__(self, *args) -> None:
         if (len(args) == 1 and isinstance(args[0], str)):
@@ -50,19 +49,18 @@ class ChessMove(vec2[ChessSquare]):
         pass
 
 
-class ChessCastleSide(Enum):
+
+class ChessCastleSide(Flag):
     """
     enum representing the side
     that a player castles on.
+
+    treat as a flag-object.
     """
 
-
-    kingside  = 0
-    queenside = 1
-
-
-    def invert(self) -> Self:
-        return ChessCastleSide(not self.value)
+    none      = 0
+    kingside  = 0b01
+    queenside = 0b10
 
 
 
@@ -71,7 +69,6 @@ class ChessMoveCastle(ChessMove):
     specialization for representing
     a castling-move.
     """
-
 
     def __init__(self, side: ChessCastleSide) -> None:
         self.side: ChessCastleSide = side
@@ -103,7 +100,6 @@ class ChessMovePromotion(ChessMove):
         :returns: True if the piece promoted to is one of [ knight, bishop, rook, queen ].
         """
         
-    
 
     def get_promotion(self) -> ChessPieceType:
         """

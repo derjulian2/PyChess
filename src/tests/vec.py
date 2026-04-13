@@ -48,6 +48,9 @@ class VecTests:
 
         UnitTest.assert_eq(v + u, (6, 8))
         UnitTest.assert_eq(u - v, (2, 2))
+        UnitTest.assert_eq(v * 2, [4, 6])
+        UnitTest.assert_eq(2 * v, [4, 6])
+        UnitTest.assert_eq(v + 2, [4, 5])
         UnitTest.assert_eq(u * v, [8, 15])
         UnitTest.assert_eq(abs(vec2i(-1, -4)), (1, 4))
 

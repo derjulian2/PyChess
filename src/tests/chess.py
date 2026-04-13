@@ -35,10 +35,16 @@ class ChessTests:
         board = FEN.board_from_fen("8/8/8/6N1/8/2k1K3/8/8")
         board.is_in_check(ChessColor.black)
 
+
     @unit_test
     def game() -> None:
-        pass
-        # game = ChessGame()
-        # game.make_move(ChessMove("e4"))
-        # game.make_move(ChessMove("c6"))
-        # game.make_move(ChessMove("Bb4"))
+        game = ChessGame()
+        game.make_move(ChessMove(ChessSquare("e2"), ChessSquare("e4")))
+        game.make_move(ChessMove(ChessSquare("e7"), ChessSquare("e5")))
+        game.make_move(ChessMove(ChessSquare("d1"), ChessSquare("h5")))
+        game.make_move(ChessMove(ChessSquare("b8"), ChessSquare("c6")))
+        game.make_move(ChessMove(ChessSquare("f1"), ChessSquare("c4")))
+        game.make_move(ChessMove(ChessSquare("g8"), ChessSquare("f6")))
+        game.make_move(ChessMove(ChessSquare("h5"), ChessSquare("f7")))
+        print("from here")
+        game.make_move(ChessMove(ChessSquare("e8"), ChessSquare("e7")))

@@ -1,5 +1,5 @@
 
-from graphics.entities.entity import Entity
+from graphics.entity import Entity
 from graphics.system import System, EventSystem, DrawSystem
 from asset_manager import AssetManager
 

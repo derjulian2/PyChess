@@ -75,9 +75,9 @@ class FEN:
                 res += str(empty_sq_count)
                 empty_sq_count = 0
 
-        def handle_rank(rank: int) -> None:
+        def handle_rank(rank_num: int) -> None:
             nonlocal res, empty_sq_count
-            rank = board.get_rank(i)
+            rank = board.get_rank(rank_num)
             for sq, piece in rank:
                 if (piece):
                     flush_if()

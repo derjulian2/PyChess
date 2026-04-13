@@ -1,6 +1,6 @@
 
 from graphics.scenes.scene import Scene
-from graphics.entities.board import ChessBoard
+from graphics.board import ChessBoard
 
 import chess.game as chess
 

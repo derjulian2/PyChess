@@ -1,8 +1,9 @@
 
-from typing import Generic, TypeVar, Iterable, Optional, TypeAlias, Self, Callable
+from typing import Generic, TypeVar, Iterable, Optional, TypeAlias, Self, Callable, Any
 from copy import copy, deepcopy
 import operator
 
+Scalar: TypeAlias = Any
 
 T = TypeVar("T")
 
@@ -72,24 +73,40 @@ class vec(Generic[T]):
         return tmp
 
 
-    def __add__(self, other: Iterable) -> Self:
-        return self.__componentwise_op_binary__(other, operator.add)
+    def __add__(self, other: Iterable | Scalar) -> Self:
+        if (isinstance(other, Iterable)):
+            return self.__componentwise_op_binary__(other, operator.add)
+        return self.__componentwise_op_unary__(lambda x: operator.add(x, other))
     
 
-    def __sub__(self, other: Iterable) -> Self:
-        return self.__componentwise_op_binary__(other, operator.sub)
-    
+    def __radd__(self, other: Iterable | Scalar) -> Self:
+        return self.__add__(other)
 
-    def __mul__(self, other: Iterable) -> Self:
-        return self.__componentwise_op_binary__(other, operator.mul)
-    
+
+    def __sub__(self, other: Iterable | Scalar) -> Self:
+        if (isinstance(other, Iterable)):
+            return self.__componentwise_op_binary__(other, operator.sub)
+        return self.__componentwise_op_unary__(lambda x: operator.sub(x, other))
+
+
+    def __mul__(self, other: Iterable | Scalar) -> Self:
+        if (isinstance(other, Iterable)):
+            return self.__componentwise_op_binary__(other, operator.mul)
+        return self.__componentwise_op_unary__(lambda x: operator.mul(x, other))
+
+
+    def __rmul__(self, other: Iterable | Scalar) -> Self:
+        return self.__mul__(other)
+
 
     def __abs__(self) -> Self:
         return self.__componentwise_op_unary__(abs)
 
 
-    def __eq__(self, other: Iterable) -> bool:
-        return False not in self.__componentwise_op_binary__(other, operator.eq)
+    def __eq__(self, other: Iterable | Scalar) -> bool:
+        if (isinstance(other, Iterable)):
+            return False not in self.__componentwise_op_binary__(other, operator.eq)
+        return False not in self.__componentwise_op_unary__(lambda x: operator.eq(x, other))
 
 
     def __iter__(self) -> T:

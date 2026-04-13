@@ -1,5 +1,5 @@
 
-from graphics.entities.entity import Entity
+from graphics.entity import Entity
 
 class ChessBoard(Entity):
     pass

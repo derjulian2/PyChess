@@ -1,5 +1,5 @@
 
-from graphics.entities.entity import Entity
+from graphics.entity import Entity
 from graphics.component import Component
 
 from pygame import Event, Surface
