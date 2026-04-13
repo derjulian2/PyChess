@@ -124,7 +124,7 @@ class vec(Generic[T]):
         """
         tuples the data contained in self.data and hashes that.
         """
-        return tuple(self.data).__hash__()
+        return hash((tuple(self.data), self.default_value))
     
 
     def clear(self) -> None:

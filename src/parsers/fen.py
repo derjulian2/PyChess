@@ -22,9 +22,9 @@ class FENPatterns:
             + rf"{blank}(?P<moves>{integer})$")
 
 
-from gamelogic.piece import ChessPieceType, ChessPiece, ChessColor
-from gamelogic.square import ChessSquare
-from gamelogic.board import ChessBoard
+from chess.piece import ChessPieceType, ChessPiece, ChessColor
+from chess.square import ChessSquare
+from chess.board import ChessBoard
 
 
 class FEN:

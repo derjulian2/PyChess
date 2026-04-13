@@ -1,5 +1,5 @@
 
-import gamelogic.board as logic
+import chess.board as logic
 
 from pygame import Rect, Surface, Event, Color
 from graphics.game_objects.game_object import GameObject

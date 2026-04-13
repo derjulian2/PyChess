@@ -1,17 +1,17 @@
 
-from __future__ import annotations
-
-from gamelogic.piece import ChessColor, ChessPieceType, ChessPiece
-from gamelogic.square import ChessSquare
-from gamelogic.move import ChessMove
+from chess.piece import ChessColor, ChessPieceType, ChessPiece
+from chess.square import ChessSquare
+from chess.move import ChessMove
 from utility.vec import vec2i
 
 from typing import Optional, TypeAlias
+from dataclasses import dataclass, field
 
 
 ChessSquareView: TypeAlias = tuple[ChessSquare, Optional[ChessPiece]]
 
 
+@dataclass
 class ChessBoard:
     """
     object that models the state of a regular chess-board.
@@ -19,15 +19,18 @@ class ChessBoard:
     a starting-position setup.
     """
 
-
-    def __init__(self,
-                 dimensions: vec2i = vec2i((8, 8))) -> None:
-        self.pieces: dict[ChessSquare, ChessPiece] = dict()
-        self.dimensions: vec2i                     = dimensions
-        self.setup_default()
+    pieces: dict[ChessSquare, ChessPiece] = field(default_factory=dict)
+    dimensions: vec2i                     = field(default=vec2i(8, 8))
 
 
     def get_rank(self, rank: int) -> list[ChessSquareView]:
+        """
+        :returns: a list of length 'self.get_rank_count()'
+                  of ChessSquare-objects with optionally a 
+                  ChessPiece-object that represents if a piece
+                  is standing on that square or not.
+                  the list corresponds to all squares of that rank on the board.
+        """
         if (not (1 <= rank <= self.get_rank_count())):
             raise ValueError(f"invalid rank-access: {i}")
         res = list()
@@ -38,6 +41,13 @@ class ChessBoard:
     
 
     def get_file(self, file: int) -> list[ChessSquareView]:
+        """
+        :returns: a list of length 'self.get_file_count()'
+                  of ChessSquare-objects with optionally a 
+                  ChessPiece-object that represents if a piece
+                  is standing on that square or not.
+                  the list corresponds to all squares of that file on the board.
+        """
         if (not (1 <= file <= self.get_file_count())):
             raise ValueError(f"invalid file-access: {i}")
         res = list()
@@ -299,7 +309,7 @@ class ChessBoard:
         return res
 
 
-    def find_reachable_squares(self, sq: ChessSquare) -> list[ChessSquare]:
+    def find_takeable(self, sq: ChessSquare) -> list[ChessSquare]:
         """
         :returns: a list of all squares that can be reached
                   by the piece standing on 'sq' in a single move.
@@ -333,7 +343,7 @@ class ChessBoard:
         """
         opponent_pieces = self.get_pieces(color=not color)
         for square, piece in opponent_pieces:
-            if (sq in self.find_reachable_squares(square)):
+            if (sq in self.find_takeable(square)):
                 return True
         return False
     
@@ -356,6 +366,8 @@ class ChessBoard:
 
         this method is only meant for executing a pre-validated move.
         """
+        assert mv.get_source_square() is not None
+        assert mv.get_target_square() is not None
         assert self.has_piece(mv.get_source_square())
         
         piece = self.pieces.pop(mv.get_source_square())

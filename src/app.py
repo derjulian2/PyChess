@@ -2,29 +2,14 @@
 from pygame import *
 from pygame_gui import *
 
-from graphics.scenes.scene import *
+from graphics.scenes.scene import Scene
 from asset_manager import AssetManager
 
-from gamelogic.piece import ChessPieceType, ChessColor
+from chess.piece import ChessPiece, ChessPieceType, ChessColor
+from utility.vec import vec2i
 
-"""
-the chess-piece-images to be loaded by the AssetManager.
-"""
-chess_piece_image_paths = {
-    (ChessColor.white, ChessPieceType.pawn)   : "assets/white-pawn.png",
-    (ChessColor.white, ChessPieceType.knight) : "assets/white-knight.png",
-    (ChessColor.white, ChessPieceType.bishop) : "assets/white-bishop.png",
-    (ChessColor.white, ChessPieceType.rook)   : "assets/white-rook.png",
-    (ChessColor.white, ChessPieceType.queen)  : "assets/white-queen.png",
-    (ChessColor.white, ChessPieceType.king)   : "assets/white-king.png",
-
-    (ChessColor.black, ChessPieceType.pawn)   : "assets/black-pawn.png",
-    (ChessColor.black, ChessPieceType.knight) : "assets/black-knight.png",
-    (ChessColor.black, ChessPieceType.bishop) : "assets/black-bishop.png",
-    (ChessColor.black, ChessPieceType.rook)   : "assets/black-rook.png",
-    (ChessColor.black, ChessPieceType.queen)  : "assets/black-queen.png",
-    (ChessColor.black, ChessPieceType.king)   : "assets/black-king.png"
-}
+from typing import Optional, Any
+from os import PathLike
 
 
 class App:
@@ -35,18 +20,26 @@ class App:
     """
 
     def __init__(self, 
-                 size: tuple[int, int] = (640 * 2, 480 * 2),
-                 title: str = "PyChess") -> None:
+                 size: vec2i,
+                 title: Optional[str] = None,
+                 icon: Optional[Any] = None,
+                 assets: Optional[dict[Any, PathLike]] = None) -> None:
+        self.ui_manager: UIManager       = UIManager(size)
+        self.asset_manager: AssetManager = AssetManager(assets)
+        
         self.win: Surface                = display.set_mode(size, vsync=1)
         self.should_close: bool          = False
-        self.ui_manager: UIManager       = UIManager(size)
-        self.asset_manager: AssetManager = AssetManager(chess_piece_image_paths)
         self.clock: time.Clock           = time.Clock()
         self.time_delta: float           = 0
+        
         self.background_color: Color     = Color("white")
-        self.scene: Scene | None         = None
+        self.scene: Optional[Scene]      = None
 
-        display.set_caption(title)
+        self.asset_manager.load_images()
+        if (icon):
+            display.set_icon(self.asset_manager.images[icon])
+        if (title):
+            display.set_caption(title)
 
 
     def change_scene(self, scene_type) -> None:
@@ -59,6 +52,7 @@ class App:
                            and take a pygame_gui.UIManager and asset_manager.AssetManager 
                            as parameters in it's constructor.
         """
+        self.ui_manager.clear_and_reset()
         self.scene = scene_type(self.ui_manager, self.asset_manager)
 
 

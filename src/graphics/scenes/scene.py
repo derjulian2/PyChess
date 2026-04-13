@@ -1,6 +1,6 @@
 
 from graphics.entities.entity import Entity
-from graphics.systems.system import System, EventSystem, DrawSystem
+from graphics.system import System, EventSystem, DrawSystem
 from asset_manager import AssetManager
 
 from pygame_gui.core import UIElement
@@ -13,9 +13,14 @@ class Scene:
     and UI-Elements.
     """
 
-    def __init__(self, ui_manager: UIManager, asset_manager: AssetManager) -> None:
-        self.entites: list[Entity]        = list()
-        self.systems: list[System]        = list()
+    def __init__(self, 
+                 ui_manager: UIManager, 
+                 asset_manager: AssetManager) -> None:
+        self.ui_manager: UIManager       = ui_manager
+        self.asset_manager: AssetManager = asset_manager
+        
+        self.entites: list[Entity] = list()
+        self.systems: list[System] = list()
 
 
     def execute(self) -> None:

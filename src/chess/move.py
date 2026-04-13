@@ -1,6 +1,6 @@
 
-from gamelogic.piece import ChessPiece, ChessPieceType, ChessColor
-from gamelogic.square import ChessSquare
+from chess.piece import ChessPiece, ChessPieceType, ChessColor
+from chess.square import ChessSquare
 from utility.vec import vec2
 
 from typing import Callable, Optional, Iterable, Self
@@ -25,7 +25,11 @@ class ChessMove(vec2[ChessSquare]):
 
 
     def __init__(self, *args) -> None:
-        super().__init__(*args)
+        if (len(args) == 1 and isinstance(args[0], str)):
+            super().__init__(None, None)
+            self.from_algebraic(args[0])
+        else:
+            super().__init__(*args)
 
 
     def get_source_square(self) -> ChessSquare:
@@ -41,6 +45,9 @@ class ChessMove(vec2[ChessSquare]):
         """
         return self.y
     
+
+    def from_algebraic(self, s: str) -> None:
+        pass
 
 
 class ChessCastleSide(Enum):
@@ -95,8 +102,7 @@ class ChessMovePromotion(ChessMove):
         """
         :returns: True if the piece promoted to is one of [ knight, bishop, rook, queen ].
         """
-        promotion_options = [ ChessPieceType.knight, ChessPieceType.bishop, ChessPieceType.rook, ChessPieceType.queen]
-        return self.promotion in promotion_options
+        
     
 
     def get_promotion(self) -> ChessPieceType:

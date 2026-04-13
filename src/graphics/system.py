@@ -1,6 +1,6 @@
 
 from graphics.entities.entity import Entity
-from graphics.components.component import Component
+from graphics.component import Component
 
 from pygame import Event, Surface
 
@@ -19,7 +19,7 @@ class System:
     
 
     def __filter_entities__(self, entities: list[Entity]) -> list[Entity]:
-        return filter(lambda e: self.__has_components__(e), entities)
+        return list(filter(lambda e: self.__has_components__(e), entities))
     
 
     def execute(self, entities: list[Entity], *args):
@@ -27,7 +27,7 @@ class System:
         
 
 
-from graphics.components.component import DrawableComponent
+from graphics.component import DrawableComponent
 
 class EventSystem(System):
 
@@ -37,6 +37,13 @@ class EventSystem(System):
 
     def execute(self, entites: list[Entity], event: Event):
         pass
+
+
+class UpdateSystem(System):
+
+    def execute(self, entities: list[Entity], time_delta: float) -> None:
+        pass
+
 
 class DrawSystem(System):
 

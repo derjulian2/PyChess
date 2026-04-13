@@ -14,10 +14,9 @@ class AssetManager:
                  images: dict[Any, PathLike]) -> None:
         self.image_paths                = images
         self.images: dict[Any, Surface] = dict()
-        self.__load_images__()
 
 
-    def __load_images__(self) -> None:
+    def load_images(self) -> None:
         """
         loads all images from their associated paths
         and keeps them accessible through an identifier-string.

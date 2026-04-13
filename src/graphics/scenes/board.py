@@ -1,11 +1,12 @@
 
 from graphics.scenes.scene import Scene
-from graphics.game_objects.board import ChessBoard
+from graphics.entities.board import ChessBoard
 
-import gamelogic.game_old as logic
+import chess.game as chess
 
 from pygame_gui import UIManager
 from asset_manager import AssetManager
+
 
 class ChessBoardScene(Scene):
     """
@@ -13,19 +14,11 @@ class ChessBoardScene(Scene):
     the move-history UI to the player.
     """
 
-    def __init__(self, ui_manager: UIManager, asset_manager: AssetManager) -> None:
+    def __init__(self, 
+                 ui_manager: UIManager, 
+                 asset_manager: AssetManager) -> None:
         super().__init__(ui_manager, asset_manager)
         
-        self.game: logic.ChessGame = logic.ChessGame()
+        self.game: chess.ChessGame = chess.ChessGame()
 
-        self.board = ChessBoard(asset_manager, self.game.board, (50, 50), 800)
-        self.attach_game_object(self.board)
-
-
-    def __setup_board__(self) -> None:
-        self.board = ChessBoard()
-        self.attach_game_object(self.board)
-
-
-    def __setup_gui__(self) -> None:
-        pass
+        self.board = ChessBoard(self.game, (50, 50), 800)

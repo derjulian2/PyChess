@@ -1,7 +1,7 @@
 
 from typing import Self
 
-import gamelogic.piece as logic
+import chess.piece as logic
 
 from graphics.game_objects.components.draggable import *
 from asset_manager import AssetManager
