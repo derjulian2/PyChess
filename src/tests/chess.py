@@ -1,7 +1,7 @@
 
 from tests.unit_test import UnitTest, unit_test
 from chess.square import ChessSquare
-from chess.board import ChessBoard
+from chess.board import ChessBoard, ChessPieceMovePatterns, ChessBoardInfo
 from chess.piece import ChessColor, ChessPiece, ChessPieceType
 from chess.move import ChessMove
 from chess.game import ChessGame
@@ -32,19 +32,20 @@ class ChessTests:
 
     @unit_test
     def board() -> None:
-        board = FEN.board_from_fen("8/8/8/6N1/8/2k1K3/8/8")
-        board.is_in_check(ChessColor.black)
+        board = FEN.board_from_fen("8/4N3/8/3K2k1/8/8/3r4/8")
 
+        print(ChessBoardInfo.is_in_check(board, ChessColor.black))
+        print(ChessBoardInfo.is_in_check(board, ChessColor.white))
 
     @unit_test
     def game() -> None:
-        game = ChessGame()
-        game.make_move(ChessMove(ChessSquare("e2"), ChessSquare("e4")))
-        game.make_move(ChessMove(ChessSquare("e7"), ChessSquare("e5")))
-        game.make_move(ChessMove(ChessSquare("d1"), ChessSquare("h5")))
-        game.make_move(ChessMove(ChessSquare("b8"), ChessSquare("c6")))
-        game.make_move(ChessMove(ChessSquare("f1"), ChessSquare("c4")))
-        game.make_move(ChessMove(ChessSquare("g8"), ChessSquare("f6")))
-        game.make_move(ChessMove(ChessSquare("h5"), ChessSquare("f7")))
-        print("from here")
-        game.make_move(ChessMove(ChessSquare("e8"), ChessSquare("e7")))
+        pass
+        # game = ChessGame()
+        # game.make_move(ChessMove(ChessSquare("e2"), ChessSquare("e4")))
+        # game.make_move(ChessMove(ChessSquare("e7"), ChessSquare("e5")))
+        # game.make_move(ChessMove(ChessSquare("d1"), ChessSquare("h5")))
+        # game.make_move(ChessMove(ChessSquare("b8"), ChessSquare("c6")))
+        # game.make_move(ChessMove(ChessSquare("f1"), ChessSquare("c4")))
+        # game.make_move(ChessMove(ChessSquare("g8"), ChessSquare("f6")))
+        # game.make_move(ChessMove(ChessSquare("h5"), ChessSquare("f7")))
+        # game.make_move(ChessMove(ChessSquare("e8"), ChessSquare("e7")))

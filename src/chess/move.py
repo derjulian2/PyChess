@@ -1,6 +1,7 @@
 
 from chess.piece import ChessPiece, ChessPieceType, ChessColor
 from chess.square import ChessSquare
+
 from utility.vec import vec2
 
 from typing import Callable, Optional, Iterable, Self
@@ -24,6 +25,16 @@ class ChessMove(vec2[ChessSquare]):
     """
 
     def __init__(self, *args) -> None:
+        """
+        inherits from utility.vec.vec2[ChessSquare], so any of the following
+        construction-patterns is valid:
+            ChessMove(ChessSquare('a1'), ChessSquare('b2'))   -> a1 to b2
+            ChessMove((ChessSquare('a1'), ChessSquare('b2'))) -> a1 to b2
+            ChessMove(ChessMove(...))                         -> a1 to b2
+
+        additionally, from a string encoding a move in algebraic chess-notation:
+            ChessMove('Qxe4') [NOT IMPLEMENTED YET]           -> Queen to e4
+        """
         if (len(args) == 1 and isinstance(args[0], str)):
             super().__init__(None, None)
             self.from_algebraic(args[0])
@@ -46,16 +57,14 @@ class ChessMove(vec2[ChessSquare]):
     
 
     def from_algebraic(self, s: str) -> None:
-        pass
+        raise NotImplementedError()
 
 
 
 class ChessCastleSide(Flag):
     """
-    enum representing the side
-    that a player castles on.
-
-    treat as a flag-object.
+    flag representing the side
+    that a player castled on.
     """
 
     none      = 0

@@ -1,7 +1,6 @@
 
 from enum import Enum
 from typing import Self
-from dataclasses import dataclass, field
 
 
 class ChessPieceType(Enum):
@@ -28,36 +27,40 @@ class ChessColor(Enum):
     white = 0
     black = 1
 
-
     def invert(self) -> Self:
         return ChessColor(not self.value)
 
 
 
-@dataclass
 class ChessPiece:
     """
     object that models a single chess-piece
     identified by a piece-type and color.
     """
 
-    type: ChessPieceType = field(default=ChessPieceType.pawn)
-    color: ChessColor    = field(default=ChessColor.white)
+    def __init__(self, 
+                 piece_type: ChessPieceType,
+                 piece_color: ChessColor) -> None:
+        self.type: ChessPieceType  = piece_type
+        self.color: ChessColor     = piece_color
 
 
     def get_type(self) -> ChessPieceType:
         """
-        getter for the type of piece.
+        :returns: an enum encoding what kind of piece this object is.
         """
         return self.type
 
 
     def get_color(self) -> ChessColor:
         """
-        getter for piece-color.
+        :returns: the color of the player that this piece belongs to.
         """
         return self.color
 
 
     def __hash__(self) -> int:
-        return hash((self.type, self.color))
+        """
+        hash-overload for dictionary-compatibility.
+        """
+        return hash((self.get_type(), self.get_color()))

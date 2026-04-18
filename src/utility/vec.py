@@ -19,19 +19,22 @@ class vec(Generic[T]):
     def __init__(self, 
                  *args,
                  default_value: Optional[T] = None,
-                 max_len: Optional[int] = None) -> None:
+                 fixed_len: Optional[int]   = None) -> None:
         """
         initialization from iterable or multiple arguments of T:
-            vec[T](1, 2, 3)   -> [1, 2, 3]
-            vec[T]([1, 2, 3]) -> [1, 2, 3]
-            vec[T]((1, 2, 3)) -> [1, 2, 3]
+            vec[T](1, 2, 3)         -> [1, 2, 3]
+            vec[T]([1, 2, 3])       -> [1, 2, 3]
+            vec[T]((1, 2, 3))       -> [1, 2, 3]
+        
+        vec[T] is also an iterable, so this is valid:
+            vec[T](vec[T](1, 2, 3)) -> [1, 2, 3]
         """
         self.data: list[T]              = list()
         self.length: int                = 0
         self.default_value: Optional[T] = default_value
         # from a single iterable
         if (len(args) == 1 and isinstance(args[0], Iterable)):
-            self.from_iterable(args[0], max_len=max_len)
+            self.from_iterable(args[0], fixed_len=fixed_len)
         # from repr()-string
         elif (len(args) == 3
               and isinstance(args[0], str)
@@ -42,7 +45,7 @@ class vec(Generic[T]):
             self.default_value = eval(args[2])
         # from multiple arguments
         elif (len(args) > 0):
-            self.from_iterable(args, max_len=max_len)
+            self.from_iterable(args, fixed_len=fixed_len)
 
 
     def __move__(self, other: Self) -> None:
@@ -173,15 +176,15 @@ class vec(Generic[T]):
     def from_iterable(self, 
                       iterable: Iterable, 
                       *, 
-                      max_len: Optional[int] = None) -> Self:
+                      fixed_len: Optional[int] = None) -> Self:
         """
         initializes from an iterable.
 
         :param iterable: the range to generate from.
         :param max_len:  limits the vector-length even if the iterable is longer.
         """
-        if (max_len):
-            self.resize(max_len)
+        if (fixed_len):
+            self.resize(fixed_len)
         else:
             self.resize(len(iterable))
         i = 0
@@ -200,7 +203,7 @@ class vec2(vec[T]):
 
 
     def __init__(self, *args, default_value: Optional[T] = None) -> None:
-        super().__init__(*args, default_value=default_value, max_len=2)
+        super().__init__(*args, default_value=default_value, fixed_len=2)
 
 
     @property

@@ -12,7 +12,7 @@ class VecTests:
     @unit_test
     def construction() -> None:
         v = vec[int]((2, 3, 4))
-        u = vec[int]([2, 3, 4])
+        u = vec[int](vec[int]([2, 3, 4]))
         k = vec[int](1, 2)
         t = vec[int](default_value=2)
         t.resize(4)
