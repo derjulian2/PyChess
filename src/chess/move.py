@@ -1,117 +1,122 @@
 
-from chess.piece import ChessPiece, ChessPieceType, ChessColor
-from chess.square import ChessSquare
+from chess.common import ChessColor, ChessPiece, ChessSquare, ChessCastleSide
 
-from utility.vec import vec2
-
-from typing import Callable, Optional, Iterable, Self
-from enum import Flag
+from dataclasses import dataclass
+from typing import ClassVar, TypeAlias
 
 
 class InvalidMoveError(Exception):
-    """
-    exception-type that will be raised
-    if a given move is not playable in
-    a given position.
-    """
     pass
 
 
 
-class ChessMove(vec2[ChessSquare]):
-    """
-    an object representing a move on a chess-board
-    defined by a starting-square and an end-square.
-    """
+@dataclass(frozen=True)
+class ChessMove:
 
-    def __init__(self, *args) -> None:
-        """
-        inherits from utility.vec.vec2[ChessSquare], so any of the following
-        construction-patterns is valid:
-            ChessMove(ChessSquare('a1'), ChessSquare('b2'))   -> a1 to b2
-            ChessMove((ChessSquare('a1'), ChessSquare('b2'))) -> a1 to b2
-            ChessMove(ChessMove(...))                         -> a1 to b2
+    source: ChessSquare
+    target: ChessSquare
 
-        additionally, from a string encoding a move in algebraic chess-notation:
-            ChessMove('Qxe4') [NOT IMPLEMENTED YET]           -> Queen to e4
-        """
-        if (len(args) == 1 and isinstance(args[0], str)):
-            super().__init__(None, None)
-            self.from_algebraic(args[0])
-        else:
-            super().__init__(*args)
-
-
-    def get_source_square(self) -> ChessSquare:
-        """
-        :returns: the square that contains the piece to be moved.
-        """
-        return self.x
-    
-
-    def get_target_square(self) -> ChessSquare:
-        """
-        :returns: the square to which the piece should be moved.
-        """
-        return self.y
-    
-
-    def from_algebraic(self, s: str) -> None:
-        raise NotImplementedError()
+    def __str__(self):
+        return f"{self.source}->{self.target}"
 
 
 
-class ChessCastleSide(Flag):
-    """
-    flag representing the side
-    that a player castled on.
-    """
+@dataclass(frozen=True)
+class ChessMovePromotion(ChessMove):
 
-    none      = 0
-    kingside  = 0b01
-    queenside = 0b10
+    promotion: ChessPiece
 
+    __valid_promotions__: ClassVar[list[ChessPiece]] = [
+        ChessPiece.bishop, ChessPiece.knight, ChessPiece.rook, ChessPiece.queen
+    ]
+
+    def __post_init__(self) -> None:
+        if not (self.promotion in ChessMovePromotion.__valid_promotions__):
+            raise InvalidMoveError(f"cannot promote to '{self.promotion}'")
+
+
+    def __str__(self):
+        return f"{self.source}->{self.target}={self.promotion}"
+
+
+
+@dataclass(frozen=True)
+class ChessCastleSquares:
+    king_source: ChessSquare
+    king_target: ChessSquare
+    rook_source: ChessSquare
+    rook_target: ChessSquare
+
+
+
+ChessCastleDescr: TypeAlias = tuple[ChessColor, ChessCastleSide]
 
 
 class ChessMoveCastle(ChessMove):
-    """
-    specialization for representing
-    a castling-move.
-    """
 
-    def __init__(self, side: ChessCastleSide) -> None:
-        self.side: ChessCastleSide = side
-        super.__init__(None)
-
-
-    def get_side(self) -> ChessCastleSide:
-        """
-        :returns: the side that a player castles on.
-        """
-        return self.side
-
-
-
-class ChessMovePromotion(ChessMove):
-    """
-    specialization for representing
-    a promotion-move.
-    """
-
-    
-    def __init__(self, squares: Iterable, piece: ChessPieceType) -> None:
-        self.promotion: ChessPieceType = piece
-        super().__init__(squares)
-
-
-    def __validate_piece__(self) -> bool:
-        """
-        :returns: True if the piece promoted to is one of [ knight, bishop, rook, queen ].
-        """
+    castle_to_squares: ClassVar[dict[ChessCastleDescr, ChessCastleSquares]] = {
+        (ChessColor.white, ChessCastleSide.kingside)  
+        : ChessCastleSquares(ChessSquare.from_str('e1'), ChessSquare.from_str('g1'),
+                             ChessSquare.from_str('h1'), ChessSquare.from_str('f1')),
         
+        (ChessColor.white, ChessCastleSide.queenside) 
+        : ChessCastleSquares(ChessSquare.from_str('e1'), ChessSquare.from_str('c1'),
+                             ChessSquare.from_str('a1'), ChessSquare.from_str('d1')),
+        
+        (ChessColor.black, ChessCastleSide.kingside)  
+        : ChessCastleSquares(ChessSquare.from_str('e8'), ChessSquare.from_str('g8'),
+                             ChessSquare.from_str('h8'), ChessSquare.from_str('f8')),
+        
+        (ChessColor.black, ChessCastleSide.queenside) 
+        : ChessCastleSquares(ChessSquare.from_str('e8'), ChessSquare.from_str('c8'),
+                             ChessSquare.from_str('a8'), ChessSquare.from_str('d8'))
+    }
 
-    def get_promotion(self) -> ChessPieceType:
-        """
-        :returns: the piece that the pawn was promoted to.
-        """
-        return self.promotion
+    squares_to_castle: ClassVar[dict[ChessMove, ChessCastleDescr]] = {
+        ChessMove(sq.king_source, sq.king_target) : descr for descr, sq in castle_to_squares.items()
+    }
+
+
+    @classmethod
+    def from_descr(cls, color: ChessColor, side: ChessCastleSide):
+        sq = ChessMoveCastle.castle_to_squares.get((color, side))
+        if (not sq):
+            raise InvalidMoveError(f"invalid description for castling: '{color}, {side}'")
+        return cls(sq.king_source, sq.king_target)
+    
+
+    def __post_init__(self) -> None:
+        if not (self in ChessMoveCastle.castle_to_squares.values()):
+            raise InvalidMoveError(f"invalid squares for castling: '{self.source}->{self.target}'")
+
+
+    def descr(self) -> ChessCastleDescr:
+        descr = ChessMoveCastle.squares_to_castle.get(ChessMove(self.source, self.target))
+        if (not descr):
+            raise ValueError(f"invalid ChessMoveCastle-instance: '{repr(self)}'")
+        return descr
+
+
+    def color(self) -> ChessColor:
+        return self.descr()[0]
+
+
+    def side(self) -> ChessCastleSide:
+        return self.descr()[1]
+
+
+    def __str__(self):
+        if (self.side() == ChessCastleSide.kingside):
+            return "O-O"
+        elif (self.side() == ChessCastleSide.queenside):
+            return "O-O-O"
+
+
+
+@dataclass(frozen=True)
+class ChessMoveEnPassant(ChessMove):
+
+    en_passant: ChessSquare
+
+    def __str__(self) -> str:
+        return f"{self.source}->{self.target} e. p."
