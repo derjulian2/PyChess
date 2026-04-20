@@ -1,6 +1,10 @@
 
-from pygame import *
-from asset_manager import AssetManager
+from graphics.asset_manager import AssetManager
+
+from pygame import Rect, Color, Event, Surface
+
+from typing import Optional
+
 
 class GameObject:
     """
@@ -11,17 +15,12 @@ class GameObject:
     every game-object has a list of components that it stores.
     """
 
+
     def __init__(self,
-                 asset_manager: AssetManager,
                  bounding_box: Rect, 
-                 color: Color | None = None, 
-                 layer: int = 0) -> None:
-        self.asset_manager: AssetManager = asset_manager
-        self.bounding_box: Rect          = bounding_box
-        self.color: Color | None         = color
-        self.layer: int                  = layer 
-        # modifying .layer directly doesn't actually change the layer
-        # maybe hold .scene member and .change_layer() func
+                 color: Optional[Color] = None) -> None:
+        self.bounding_box: Rect     = bounding_box
+        self.color: Optional[Color] = color
     
 
     def process_events(self, event: Event) -> None:

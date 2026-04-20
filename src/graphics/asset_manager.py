@@ -4,6 +4,7 @@ from pygame import image, Surface
 from typing import Any
 from os import PathLike
 
+
 class AssetManager:
     """
     object that bundles asset-loading into one

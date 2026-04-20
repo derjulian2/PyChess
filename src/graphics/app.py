@@ -1,12 +1,11 @@
 
-from pygame import *
-from pygame_gui import *
+from graphics.board import ChessBoard
+from graphics.asset_manager import AssetManager
 
-from graphics.scenes.scene import Scene
-from asset_manager import AssetManager
+from utility.vec import vec2i, vec2f
 
-from chess.piece import ChessPiece, ChessPieceType, ChessColor
-from utility.vec import vec2i
+from pygame import Surface, time, display, event, Event, Color, QUIT
+from pygame_gui import UIManager
 
 from typing import Optional, Any
 from os import PathLike
@@ -32,28 +31,14 @@ class App:
         self.clock: time.Clock           = time.Clock()
         self.time_delta: float           = 0
         
-        self.background_color: Color     = Color("white")
-        self.scene: Optional[Scene]      = None
-
         self.asset_manager.load_images()
         if (icon):
             display.set_icon(self.asset_manager.images[icon])
         if (title):
             display.set_caption(title)
 
-
-    def change_scene(self, scene_type) -> None:
-        """
-        switches the active scene to an instance of the passed
-        scene-type. 
-
-        :param scene_type: the scene-type to be constructed. 
-                           this type must be derived from graphics.scene.Scene
-                           and take a pygame_gui.UIManager and asset_manager.AssetManager 
-                           as parameters in it's constructor.
-        """
-        self.ui_manager.clear_and_reset()
-        self.scene = scene_type(self.ui_manager, self.asset_manager)
+        self.background_color: Color     = Color("white")
+        self.board: ChessBoard           = ChessBoard(vec2f(0.0, 0.0), float(min(size)), self.asset_manager)
 
 
     def process_events(self) -> None:
@@ -64,16 +49,14 @@ class App:
         for e in event.get():
             if (e.type == QUIT):
                 self.should_close = True
-            if (self.scene is not None):
-                self.scene.process_events(e)
+            self.board.process_events(e)
 
 
     def update(self) -> None:
         """
         updates the active scene and passes time-delta to it.
         """
-        if (self.scene is not None):
-            self.scene.update(self.time_delta)
+        self.board.update(self.time_delta)
 
 
     def draw(self) -> None:
@@ -81,9 +64,8 @@ class App:
         clears the window's surface with the set background-color and
         draws the currently set active-scene ontop.
         """
-        self.win.fill(Color(255, 255, 255))
-        if (self.scene is not None):
-            self.scene.draw(self.win)
+        self.win.fill(self.background_color)
+        self.board.draw(self.win)
         display.flip()
 
 
