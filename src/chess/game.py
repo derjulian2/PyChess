@@ -1,5 +1,5 @@
 
-from chess.common import ChessCastleSide
+from chess.common import ChessCastleSide, ChessGameState
 from chess.board import ChessBoard
 from chess.move import ChessMove, ChessMoveCastle, InvalidMoveError
 from chess.fen import FEN
@@ -60,20 +60,30 @@ class ChessGame:
         castling_rule = self.get_rule(CastleRule)
         rights        = castling_rule.rights[color]
         if (rights != ChessCastleSide.none):
-            if (rights & ChessCastleSide.kingside 
-                and self.board.can_castle(color, ChessCastleSide.kingside)):
-                res.append(ChessMoveCastle.from_descr(color, ChessCastleSide.kingside))
-            if (rights & ChessCastleSide.queenside 
-                and self.board.can_castle(color, ChessCastleSide.queenside)):
-                res.append(ChessMoveCastle.from_descr(color, ChessCastleSide.queenside))
+            for descr in [ (color, ChessCastleSide.kingside), (color, ChessCastleSide.queenside) ]:
+                if (rights & descr[1]
+                    and self.board.can_castle(descr)):
+                    mv = ChessMoveCastle.from_descr(descr[0], descr[1])
+                    try:
+                        self.validate(mv)
+                        res.append(mv)
+                    except: pass
         
         # special move: en-passant
         en_passant_rule = self.get_rule(EnPassantRule)
         if (en_passant_rule.is_possible()):
-            res += en_passant_rule.moves
+            for mv in en_passant_rule.moves:
+                try: 
+                    self.validate(mv)
+                    res.append(mv)
+                except: continue
         
         return res
+
     
+    def is_checkmate(self) -> bool:
+        return len(self.gen_possible_moves()) == 0 and self.board.in_check()
+
 
     def make_move(self, mv: ChessMove) -> None:
         try:

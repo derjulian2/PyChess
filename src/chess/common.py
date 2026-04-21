@@ -20,6 +20,14 @@ class ChessColor(Enum):
     
 
 
+class ChessGameState(Enum):
+    in_progress = 0
+    draw        = 1
+    white_win   = 2
+    black_win   = 3
+
+
+
 class ChessPiece(Enum):
     none   = 0
     pawn   = 1

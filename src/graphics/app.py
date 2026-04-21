@@ -38,7 +38,7 @@ class App:
             display.set_caption(title)
 
         self.background_color: Color     = Color("white")
-        self.board: ChessBoard           = ChessBoard(vec2f(0.0, 0.0), float(min(size)), self.asset_manager)
+        self.board: ChessBoard           = ChessBoard(vec2i(0, 0), min(size), self.asset_manager)
 
 
     def process_events(self) -> None:

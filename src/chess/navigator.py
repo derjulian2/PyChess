@@ -108,6 +108,8 @@ class ChessBoardNavigator:
         iter = self.relative(i * dx, i * dy)
         while (iter):
             res.append(iter)
+            if (self.__is_blocked_by_enemy__(iter)):
+                break
             i   += 1
             iter = self.relative(i * dx, i * dy)
         return res

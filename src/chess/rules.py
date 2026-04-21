@@ -6,7 +6,7 @@ from chess.navigator import ChessBoardNavigator
 
 from abc import ABC
 from typing import ClassVar
-from copy import deepcopy
+from copy import deepcopy, copy
 
 from dataclasses import dataclass, field
 from random import randint
@@ -27,9 +27,12 @@ class PieceRule(ChessRule):
     def validate(self, mv: ChessMove, board: ChessBoard) -> None:
         src = board.get_square(mv.source)
         tgt = board.get_square(mv.target)
-        
+
         if (src[1].is_none()):
             raise InvalidMoveError("no piece standing on source-square")
+
+        if (src == tgt):
+            raise InvalidMoveError("move to identical square")
 
         if not (tgt[1].is_none()):
             if (src[1].color == tgt[1].color):
@@ -162,3 +165,8 @@ class CheckRule(ChessRule):
             if (tmp.in_check(piece.color)):
                 raise InvalidMoveError("move would put the king in check")
         
+
+
+class RepetitionRule(ChessRule):
+
+    pass

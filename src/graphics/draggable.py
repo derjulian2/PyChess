@@ -37,11 +37,11 @@ class Draggable(GameObject):
                 self.is_dragging = True
                 mouse.get_rel() # call once to reset since-last-call
                 if (self.on_drag_start):
-                    self.on_drag_start(mouse.get_pos())
+                    self.on_drag_start(vec2i(mouse.get_pos()))
         elif (event.type == MOUSEBUTTONUP and self.is_dragging):
             self.is_dragging = False
             if (self.on_drag_end):
-                self.on_drag_end(mouse.get_pos())
+                self.on_drag_end(vec2i(mouse.get_pos()))
 
 
     def update(self, time_delta: float) -> None:

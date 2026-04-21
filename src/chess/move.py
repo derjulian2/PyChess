@@ -2,7 +2,7 @@
 from chess.common import ChessColor, ChessPiece, ChessSquare, ChessCastleSide
 
 from dataclasses import dataclass
-from typing import ClassVar, TypeAlias
+from typing import ClassVar, TypeAlias, Self
 
 
 class InvalidMoveError(Exception):
@@ -10,11 +10,22 @@ class InvalidMoveError(Exception):
 
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, )
 class ChessMove:
 
     source: ChessSquare
     target: ChessSquare
+
+    def __eq__(self, other: Self):
+        """
+        explicit definition because the other
+        move-types inheriting from this still
+        need to compare equal to another if
+        the squares match.
+        """
+        return (self.source == other.source
+                and self.target == other.target)
+    
 
     def __str__(self):
         return f"{self.source}->{self.target}"

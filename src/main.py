@@ -26,8 +26,3 @@ if __name__ == "__main__":
                    assets=gen_piece_image_paths())
     app.exec()
     pygame.quit()
-
-
-
-
-
